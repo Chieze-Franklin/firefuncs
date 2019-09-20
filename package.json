@@ -1,0 +1,31 @@
+{
+  "name": "firefuncs",
+  "version": "0.0.1",
+  "description": "Create Firebase Cloud Functions from functions marked with decorators",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "prepublish": "tsc",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Chieze-Franklin/firefuncs.git"
+  },
+  "keywords": [
+    "firebase",
+    "cloud",
+    "functions"
+  ],
+  "author": "Franklin Chieze",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/Chieze-Franklin/firefuncs/issues"
+  },
+  "homepage": "https://github.com/Chieze-Franklin/firefuncs#readme",
+  "dependencies": {
+    "@types/glob": "^7.1.1",
+    "firebase-functions": "^3.2.0",
+    "glob": "^7.1.4"
+  }
+}

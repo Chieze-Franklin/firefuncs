@@ -1,2 +1,2 @@
-# ff-loader
+# firefuncs
 Firebase (cloud) functions loader

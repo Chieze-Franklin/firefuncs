@@ -1,3 +1,6 @@
+# ignores everything .gitignore ignores except the following:
+# dist/
+
 # Logs
 logs
 *.log
@@ -40,7 +43,7 @@ jspm_packages/
 typings/
 
 # TypeScript output files
-dist/
+# dist/ # don't ignore this; we want it pushed to npm
 
 # Optional npm cache directory
 .npm
