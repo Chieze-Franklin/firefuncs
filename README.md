@@ -2,7 +2,9 @@
 
 >> Create [Firebase cloud functions](https://firebase.google.com/docs/functions) from functions marked with [decorators](https://www.typescriptlang.org/docs/handbook/decorators.html).
 
->> `npm install --save firefuncs`
+```bash
+npm i firefuncs
+```
 
 To demonstrate the use of firefuncs, let's create Firebase cloud functions with and without firefuncs.
 
@@ -51,7 +53,7 @@ exports.helloWorld = functions.https.onRequest(helloWorld);
 exports.initializeApp = functions.https.onRequest(initializeApp);
 ```
 
-While this is a lot better than the first example, it still requires that **index.ts** be modified every time new functions are added to or existing ones removed.
+While this is a lot better than the first example, it still requires that **index.ts** be modified every time new functions are added or existing ones removed.
 
 To get a solution where **index.ts** never needs to change even as functions are added or removed, we need a way of specifying what a function is meant for; we need a way of marking or _decorating_ a function with its purpose. Enter [decorators](https://www.typescriptlang.org/docs/handbook/decorators.html)!
 
@@ -73,13 +75,15 @@ To get a solution where **index.ts** never needs to change even as functions are
 Install firefuncs
 
 ```bash
-$ npm i firefuncs
+npm i firefuncs
 ```
 
 Move your functions into classes and decorate them with the appropriate decorators. In the example below, we want our functions to handle HTTP requests, so we decorate them with the `onRequest` decorator.
 
 **functions/hello.functions.ts**
 ```ts
+import * as admin from 'firebase-admin';
+import * as functions from 'firebase-functions';
 import { onRequest } from 'firefuncs';
 
 export class Hello {
