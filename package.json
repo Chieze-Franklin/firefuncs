@@ -1,6 +1,6 @@
 {
   "name": "firefuncs",
-  "version": "0.0.5",
+  "version": "0.1.0",
   "description": "Create Firebase Cloud Functions from functions marked with decorators",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -24,7 +24,10 @@
   },
   "homepage": "https://github.com/Chieze-Franklin/firefuncs#readme",
   "dependencies": {
+    "@types/cors": "^2.8.6",
     "@types/glob": "^7.1.1",
+    "cors": "^2.8.5",
+    "express": "^4.17.1",
     "firebase-admin": "^8.6.0",
     "firebase-functions": "^3.2.0",
     "glob": "^7.1.4"
