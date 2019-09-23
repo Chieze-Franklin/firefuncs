@@ -128,8 +128,6 @@ onSchedule(schedule: string, options?: ScheduleOptions, ...regions: Region[])
 The `onSchedule` decorator specifies that a function should [run at specified times](https://firebase.google.com/docs/functions/schedule-functions).
 
 #### parameters
-The `onSchedule` decorator expects the following parameters:
-
 - **schedule**  
 This is a `string` parameter that represents how when you want the function to run. Both Unix Crontab and AppEngine syntax are supported.
 
