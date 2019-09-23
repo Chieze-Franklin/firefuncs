@@ -117,3 +117,52 @@ Object.keys(funcs).forEach(key => {
 ```
 
 Now you can add more functions in the **/functions** directory and never need to edit **index.ts** for the added functions to be discovered and converted to Firebase cloud functions.
+
+## Firefuncs decorators
+
+### onSchedule
+```ts
+onSchedule(schedule: string, options?: ScheduleOptions, ...regions: Region[])
+```
+
+The `onSchedule` decorator specifies that a function should [run at specified times](https://firebase.google.com/docs/functions/schedule-functions).
+
+#### parameters
+The `onSchedule` decorator expects the following parameters:
+
+- **schedule**  
+This is a `string` parameter that represents how when you want the function to run. Both Unix Crontab and AppEngine syntax are supported.
+
+- **options**  
+This is an optional `ScheduleOptions` parameter for passing in extra data to the decorator.
+
+```ts
+class ScheduleOptions {
+    timeZone?: string;
+}
+```
+
+- **regions**  
+This is an optional list of [regions](https://firebase.google.com/docs/functions/locations) where the function should be deployed to.
+
+#### example
+```ts
+import * as admin from 'firebase-admin';
+import * as functions from 'firebase-functions';
+import { onSchedule } from 'firefuncs';
+
+export class Records {
+    @onSchedule('every 5 minutes')
+    public async scheduledFunction(context: any) {
+        console.log('This will be run every 5 minutes!');
+        return null;
+    }
+    @onSchedule('5 11 * * *', {
+        timeZone: 'America/New_York'
+    }, 'europe-west1')
+    public async scheduledFunctionCrontab(context: any) {
+        console.log('This will be run every day at 11:05 AM Eastern!');
+        return null;
+    }
+}
+```
