@@ -60,7 +60,7 @@ To get a solution where **index.ts** never needs to change even as functions are
 ## Creating Firebase cloud functions using firefuncs
 
 `firefuncs` makes use of decorators, an experimental TypeScript feature. Ensure you enable `experimentalDecorators` and `emitDecoratorMetadata` options in **tsconfig.json**.
-```json
+```js
 {
   "compilerOptions": {
     /* Other Options */
