@@ -145,8 +145,6 @@ This is an optional list of [regions](https://firebase.google.com/docs/functions
 
 #### example
 ```ts
-import * as admin from 'firebase-admin';
-import * as functions from 'firebase-functions';
 import { onSchedule } from 'firefuncs';
 
 export class Schedules {
