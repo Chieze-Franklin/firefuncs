@@ -129,7 +129,7 @@ The `onSchedule` decorator specifies that a function should [run at specified ti
 
 #### parameters
 - **schedule**  
-This is a `string` parameter that represents how when you want the function to run. Both Unix Crontab and AppEngine syntax are supported.
+This is a `string` parameter that represents when you want the function to run. Both Unix Crontab and AppEngine syntax are supported.
 
 - **options**  
 This is an optional `ScheduleOptions` parameter for passing in extra data to the decorator.
@@ -149,7 +149,7 @@ import * as admin from 'firebase-admin';
 import * as functions from 'firebase-functions';
 import { onSchedule } from 'firefuncs';
 
-export class Records {
+export class Schedules {
     @onSchedule('every 5 minutes')
     public async scheduledFunction(context: any) {
         console.log('This will be run every 5 minutes!');
