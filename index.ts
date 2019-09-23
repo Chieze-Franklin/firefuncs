@@ -2,16 +2,18 @@ import cors from 'cors';
 import express from 'express';
 import * as functions from 'firebase-functions';
 import * as glob from 'glob';
-import { DatabaseOptions, RequestOptions, ScheduleOptions } from './options';
+import { DatabaseOptions, RequestOptions, ScheduleOptions, Region } from './options';
 
 let cloudFuncs: any = {};
 
-export function onDatabaseCreate(path: string, options?: DatabaseOptions) {
+export function onDatabaseCreate(path: string, options?: DatabaseOptions, ...regions: Region[]) {
     return function (target: any, propertyKey: string, descriptor: PropertyDescriptor) {
         if (options && options.instance) {
-            cloudFuncs[`${target.constructor.name}_${propertyKey}`] = functions.database.instance(options.instance).ref(path).onCreate(target[propertyKey]);
+            cloudFuncs[`${target.constructor.name}_${propertyKey}`] =
+            functions.region(...regions).database.instance(options.instance).ref(path).onCreate(target[propertyKey]);
         } else {
-            cloudFuncs[`${target.constructor.name}_${propertyKey}`] = functions.database.ref(path).onCreate(target[propertyKey]);
+            cloudFuncs[`${target.constructor.name}_${propertyKey}`] =
+            functions.region(...regions).database.ref(path).onCreate(target[propertyKey]);
         }
     }
 }
@@ -76,10 +78,13 @@ export function onCall() {
     }
 }
 
-export function onRequest(path: string = '/', options?: RequestOptions) {
+export function onRequest(path: string = '/', options?: RequestOptions, ...regions: Region[]) {
     return function (target: any, propertyKey: string, descriptor: PropertyDescriptor) {
+        if (!path) path = '/';
+        if (!regions || regions.length == 0) regions = ['us-central1'];
         if (path == '/' && !options) {
-            cloudFuncs[`${target.constructor.name}_${propertyKey}`] = functions.https.onRequest(target[propertyKey]);
+            cloudFuncs[`${target.constructor.name}_${propertyKey}`] =
+            functions.region(...regions).https.onRequest(target[propertyKey]);
         } else {
             const app = express();
             app.use(cors({
@@ -90,17 +95,21 @@ export function onRequest(path: string = '/', options?: RequestOptions) {
             } else {
                 app.get(path, target[propertyKey]);
             }
-            cloudFuncs[`${target.constructor.name}_${propertyKey}`] = functions.https.onRequest(app);
+            cloudFuncs[`${target.constructor.name}_${propertyKey}`] =
+            functions.region(...regions).https.onRequest(app);
         }
     }
 }
 
-export function onSchedule(schedule: string, options?: ScheduleOptions) {
+export function onSchedule(schedule: string, options?: ScheduleOptions, ...regions: Region[]) {
     return function (target: any, propertyKey: string, descriptor: PropertyDescriptor) {
+        if (!regions || regions.length == 0) regions = ['us-central1'];
         if (options && options.timeZone) {
-            cloudFuncs[`${target.constructor.name}_${propertyKey}`] = functions.pubsub.schedule(schedule).timeZone(options.timeZone).onRun(target[propertyKey]);
+            cloudFuncs[`${target.constructor.name}_${propertyKey}`] =
+                functions.region(...regions).pubsub.schedule(schedule).timeZone(options.timeZone).onRun(target[propertyKey]);
         } else {
-            cloudFuncs[`${target.constructor.name}_${propertyKey}`] = functions.pubsub.schedule(schedule).onRun(target[propertyKey]);
+            cloudFuncs[`${target.constructor.name}_${propertyKey}`] =
+                functions.region(...regions).pubsub.schedule(schedule).onRun(target[propertyKey]);
         }
     }
 }
