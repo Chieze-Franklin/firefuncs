@@ -188,7 +188,7 @@ export class InitMiddleware {
 }
 ```
 
->> **Note:** A middleware is any class that has a method named `middleware` with the same signature as an Express middleware. 
+>> **Note:** A middleware is any class that has a method named `middleware` with the same signature as an [Express middleware](https://expressjs.com/en/guide/using-middleware.html). 
 
 ### onSchedule
 ```ts
