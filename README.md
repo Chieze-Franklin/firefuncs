@@ -120,6 +120,76 @@ Now you can add more functions in the **/functions** directory and never need to
 
 ## Firefuncs decorators
 
+### onRequest
+```ts
+onRequest(path: string = '/', options?: RequestOptions, ...regions: Region[])
+```
+
+The `onRequest` decorator specifies that a function should [handle an HTTP request](https://firebase.google.com/docs/functions/http-events).
+
+#### parameters
+- **path**  
+This is a `string` parameter that represents an [Express-style route path](https://expressjs.com/en/guide/routing.html), like `/users/:id`.
+
+- **options**  
+This is an optional `RequestOptions` parameter for passing in extra data to the decorator.
+
+```ts
+class RequestOptions {
+    method?: RequestMethodType;
+    middleware?: typeof RequestMiddleware[];
+}
+
+class RequestMiddleware {
+    middleware(req: any, res: any, next: Function) {}
+}
+
+type RequestMethodType = "delete" | "get" | "options" | "post" | "put"
+```
+
+- **regions**  
+This is an optional list of [regions](https://firebase.google.com/docs/functions/locations) where the function should be deployed to.
+
+#### example
+```ts
+import { onRequest } from 'firefuncs';
+
+export class Records {
+    @onRequest()
+    public async hello(req: any, res: any) {
+        res.send('Hello World!');
+    }
+
+    @onRequest('/', {
+        method: 'post',
+        middleware: [InitMiddleware, AuthMiddleware]
+    }, 'europe-west1')
+    public async save(req: any, res: any) {
+        try {
+            const db = req.firestore.db;
+            await db.collection('records').add({ ...req.body });
+            res.send('Added records successfully');
+        } catch (error) {
+            res.send({ error })
+        }
+    }
+}
+
+class AuthClientMiddleware {
+    async middleware(req: any, res: any, next: Function) {
+        console.log('Authenticate the request here');
+    }
+}
+
+export class InitMiddleware {
+    async middleware(req: any, res: any, next: Function) {
+        console.log('Initialize the Firebase app here');
+    }
+}
+```
+
+>> **Note:** A middleware is any class that has a method named `middleware` with the same signature as an Express middleware. 
+
 ### onSchedule
 ```ts
 onSchedule(schedule: string, options?: ScheduleOptions, ...regions: Region[])

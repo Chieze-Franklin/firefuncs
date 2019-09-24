@@ -3,8 +3,10 @@ import express from 'express';
 import * as functions from 'firebase-functions';
 import * as glob from 'glob';
 import { DatabaseOptions, RequestOptions, ScheduleOptions, Region } from './options';
+import { RequestMiddleware } from './middleware';
 
 let cloudFuncs: any = {};
+let map = new Map<string, RequestMiddleware>();
 
 export function onDatabaseCreate(path: string, options?: DatabaseOptions, ...regions: Region[]) {
     return function (target: any, propertyKey: string, descriptor: PropertyDescriptor) {
@@ -84,19 +86,29 @@ export function onRequest(path: string = '/', options?: RequestOptions, ...regio
         if (!regions || regions.length == 0) regions = ['us-central1'];
         if (path == '/' && !options) {
             cloudFuncs[`${target.constructor.name}_${propertyKey}`] =
-            functions.region(...regions).https.onRequest(target[propertyKey]);
+                functions.region(...regions).https.onRequest(target[propertyKey]);
         } else {
             const app = express();
             app.use(cors({
                 origin: true
             }));
+            if (options && options.middleware) {
+                options.middleware.forEach(m => {
+                    let i = map.get(m.name);
+                    if (!i) {
+                        i = new m();
+                        map.set(m.name, i);
+                    }
+                    app.use(i.middleware);
+                });
+            }
             if (options && options.method) {
                 app[options.method](path, target[propertyKey]);
             } else {
                 app.get(path, target[propertyKey]);
             }
             cloudFuncs[`${target.constructor.name}_${propertyKey}`] =
-            functions.region(...regions).https.onRequest(app);
+                functions.region(...regions).https.onRequest(app);
         }
     }
 }
