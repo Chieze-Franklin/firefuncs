@@ -50,27 +50,35 @@ export function onDatabaseWrite(path: string, options?: DatabaseOptions) {
     }
 }
 
-export function onFirestoreCreate(path: string) {
+export function onFirestoreCreate(path: string, ...regions: Region[]) {
     return function (target: any, propertyKey: string, descriptor: PropertyDescriptor) {
-        cloudFuncs[`${target.constructor.name}_${propertyKey}`] = functions.firestore.document(path).onCreate(target[propertyKey]);
+        if (!regions || regions.length == 0) regions = ['us-central1'];
+        cloudFuncs[`${target.constructor.name}_${propertyKey}`] =
+            functions.region(...regions).firestore.document(path).onCreate(target[propertyKey]);
     }
 }
 
-export function onFirestoreDelete(path: string) {
+export function onFirestoreDelete(path: string, ...regions: Region[]) {
     return function (target: any, propertyKey: string, descriptor: PropertyDescriptor) {
-        cloudFuncs[`${target.constructor.name}_${propertyKey}`] = functions.firestore.document(path).onDelete(target[propertyKey]);
+        if (!regions || regions.length == 0) regions = ['us-central1'];
+        cloudFuncs[`${target.constructor.name}_${propertyKey}`] =
+            functions.region(...regions).firestore.document(path).onDelete(target[propertyKey]);
     }
 }
 
-export function onFirestoreUpdate(path: string) {
+export function onFirestoreUpdate(path: string, ...regions: Region[]) {
     return function (target: any, propertyKey: string, descriptor: PropertyDescriptor) {
-        cloudFuncs[`${target.constructor.name}_${propertyKey}`] = functions.firestore.document(path).onUpdate(target[propertyKey]);
+        if (!regions || regions.length == 0) regions = ['us-central1'];
+        cloudFuncs[`${target.constructor.name}_${propertyKey}`] =
+            functions.region(...regions).firestore.document(path).onUpdate(target[propertyKey]);
     }
 }
 
-export function onFirestoreWrite(path: string) {
+export function onFirestoreWrite(path: string, ...regions: Region[]) {
     return function (target: any, propertyKey: string, descriptor: PropertyDescriptor) {
-        cloudFuncs[`${target.constructor.name}_${propertyKey}`] = functions.firestore.document(path).onWrite(target[propertyKey]);
+        if (!regions || regions.length == 0) regions = ['us-central1'];
+        cloudFuncs[`${target.constructor.name}_${propertyKey}`] =
+            functions.region(...regions).firestore.document(path).onWrite(target[propertyKey]);
     }
 }
 

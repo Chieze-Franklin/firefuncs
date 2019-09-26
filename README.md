@@ -141,7 +141,7 @@ class RequestOptions {
 }
 
 class RequestMiddleware {
-    middleware(req: any, res: any, next: Function) {}
+    middleware(req, res, next) {}
 }
 
 type RequestMethodType = "delete" | "get" | "options" | "post" | "put"
@@ -156,7 +156,7 @@ import { onRequest } from 'firefuncs';
 
 export class Records {
     @onRequest()
-    public async hello(req: any, res: any) {
+    public async hello(req, res) {
         res.send('Hello World!');
     }
 
@@ -164,7 +164,7 @@ export class Records {
         method: 'post',
         middleware: [InitMiddleware, AuthMiddleware]
     }, 'europe-west1')
-    public async save(req: any, res: any) {
+    public async save(req, res) {
         try {
             const db = req.firestore.db;
             await db.collection('records').add({ ...req.body });
@@ -176,19 +176,79 @@ export class Records {
 }
 
 class AuthClientMiddleware {
-    async middleware(req: any, res: any, next: Function) {
+    async middleware(req, res, next) {
         console.log('Authenticate the request here');
     }
 }
 
 class InitMiddleware {
-    async middleware(req: any, res: any, next: Function) {
+    async middleware(req, res, next) {
         console.log('Initialize the Firebase app here');
     }
 }
 ```
 
 >> **Note:** A middleware is any class that has a method named `middleware` with the same signature as an [Express middleware](https://expressjs.com/en/guide/using-middleware.html). 
+
+### onFirestoreCreate, onFirestoreDelete, onFirestoreUpdate, onFirestoreWrite
+```ts
+onFirestoreCreate(path: string, ...regions: Region[])
+onFirestoreDelete(path: string, ...regions: Region[])
+onFirestoreUpdate(path: string, ...regions: Region[])
+onFirestoreWrite(path: string, ...regions: Region[])
+```
+
+These decorators specify that a function should [handle events in Cloud Firestore](https://firebase.google.com/docs/functions/firestore-events).
+
+#### parameters
+- **path**  
+This is a `string` parameter that represents the path to the document that is being listened to.
+
+- **regions**  
+This is an optional list of [regions](https://firebase.google.com/docs/functions/locations) where the function should be deployed to.
+
+#### example
+```ts
+import { onFirestoreCreate, onFirestoreDelete, onFirestoreUpdate, onFirestoreWrite } from 'firefuncs';
+
+export class FirestoreFunctions {
+    @onFirestoreCreate('users/{userId}')
+    public async listenForWhenUserIsCreated(snapshot, context) {
+        console.log(`New data at users/${context.params.userId} is:`);
+        console.log(snapshot.data());
+    }
+    @onFirestoreDelete('users/{userId}')
+    public async listenForWhenUserIsDeleted(snapshot, context) {
+        console.log(`Deleted data at users/${context.params.userId} is:`);
+        console.log(snapshot.data());
+    }
+    @onFirestoreUpdate('users/{userId}')
+    public async listenForWhenUserIsUpdated(change, context) {
+        console.log(`previous data at users/${context.params.userId} is:`);
+        console.log(change.before.data());
+        console.log(`New data at users/${context.params.userId} is:`);
+        console.log(change.after.data());
+    }
+    @onFirestoreWrite('users/marie')
+    public async listenForWhenUserMarieIsWritten(change, context) {
+        console.log('previous data at users/marie is:');
+        console.log(change.before.data());
+        // a write operation could be a create, update or delete
+        // check to see if the document still exists
+        console.log('New data at users/marie is:');
+        console.log(change.after.exists ? change.after.data() : undefined);
+    }
+    @onFirestoreWrite('users/{userId}')
+    public async listenForWhenUserIsWritten(change, context) {
+        console.log(`previous data at users/${context.params.userId} is:`);
+        console.log(change.before.data());
+        // a write operation could be a create, update or delete
+        // check to see if the document still exists
+        console.log(`New data at users/${context.params.userId} is:`);
+        console.log(change.after.exists ? change.after.data() : undefined);
+    }
+}
+```
 
 ### onSchedule
 ```ts
@@ -219,14 +279,14 @@ import { onSchedule } from 'firefuncs';
 
 export class Schedules {
     @onSchedule('every 5 minutes')
-    public async scheduledFunction(context: any) {
+    public async scheduledFunction(context) {
         console.log('This will be run every 5 minutes!');
         return null;
     }
     @onSchedule('5 11 * * *', {
         timeZone: 'America/New_York'
     }, 'europe-west1')
-    public async scheduledFunctionCrontab(context: any) {
+    public async scheduledFunctionCrontab(context) {
         console.log('This will be run every day at 11:05 AM Eastern!');
         return null;
     }
