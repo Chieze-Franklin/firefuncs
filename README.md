@@ -181,7 +181,7 @@ class AuthClientMiddleware {
     }
 }
 
-export class InitMiddleware {
+class InitMiddleware {
     async middleware(req: any, res: any, next: Function) {
         console.log('Initialize the Firebase app here');
     }
@@ -232,3 +232,14 @@ export class Schedules {
     }
 }
 ```
+
+### onCall
+```ts
+onCall(...regions: Region[])
+```
+
+The `onCall` decorator specifies that a function should [be callable directly from a Firebase app](https://firebase.google.com/docs/functions/callable).
+
+#### parameters
+- **regions**  
+This is an optional list of [regions](https://firebase.google.com/docs/functions/locations) where the function should be deployed to.

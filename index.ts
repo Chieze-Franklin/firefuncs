@@ -74,9 +74,11 @@ export function onFirestoreWrite(path: string) {
     }
 }
 
-export function onCall() {
+export function onCall(...regions: Region[]) {
     return function (target: any, propertyKey: string, descriptor: PropertyDescriptor) {
-        cloudFuncs[`${target.constructor.name}_${propertyKey}`] = functions.https.onCall(target[propertyKey]);
+        if (!regions || regions.length == 0) regions = ['us-central1'];
+        cloudFuncs[`${target.constructor.name}_${propertyKey}`] =
+            functions.region(...regions).https.onCall(target[propertyKey]);
     }
 }
 
