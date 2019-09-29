@@ -10,18 +10,20 @@ let map = new Map<string, RequestMiddleware>();
 
 export function onDatabaseCreate(path: string, options?: DatabaseOptions, ...regions: Region[]) {
     return function (target: any, propertyKey: string, descriptor: PropertyDescriptor) {
+        if (!regions || regions.length === 0) regions = ['us-central1'];
         if (options && options.instance) {
             cloudFuncs[`${target.constructor.name}_${propertyKey}`] =
-            functions.region(...regions).database.instance(options.instance).ref(path).onCreate(target[propertyKey]);
+                functions.region(...regions).database.instance(options.instance).ref(path).onCreate(target[propertyKey]);
         } else {
             cloudFuncs[`${target.constructor.name}_${propertyKey}`] =
-            functions.region(...regions).database.ref(path).onCreate(target[propertyKey]);
+                functions.region(...regions).database.ref(path).onCreate(target[propertyKey]);
         }
     }
 }
 
-export function onDatabaseDelete(path: string, options?: DatabaseOptions) {
+export function onDatabaseDelete(path: string, options?: DatabaseOptions, ...regions: Region[]) {
     return function (target: any, propertyKey: string, descriptor: PropertyDescriptor) {
+        if (!regions || regions.length === 0) regions = ['us-central1'];
         if (options && options.instance) {
             cloudFuncs[`${target.constructor.name}_${propertyKey}`] = functions.database.instance(options.instance).ref(path).onDelete(target[propertyKey]);
         } else {
@@ -30,8 +32,9 @@ export function onDatabaseDelete(path: string, options?: DatabaseOptions) {
     }
 }
 
-export function onDatabaseUpdate(path: string, options?: DatabaseOptions) {
+export function onDatabaseUpdate(path: string, options?: DatabaseOptions, ...regions: Region[]) {
     return function (target: any, propertyKey: string, descriptor: PropertyDescriptor) {
+        if (!regions || regions.length === 0) regions = ['us-central1'];
         if (options && options.instance) {
             cloudFuncs[`${target.constructor.name}_${propertyKey}`] = functions.database.instance(options.instance).ref(path).onUpdate(target[propertyKey]);
         } else {
@@ -40,8 +43,9 @@ export function onDatabaseUpdate(path: string, options?: DatabaseOptions) {
     }
 }
 
-export function onDatabaseWrite(path: string, options?: DatabaseOptions) {
+export function onDatabaseWrite(path: string, options?: DatabaseOptions, ...regions: Region[]) {
     return function (target: any, propertyKey: string, descriptor: PropertyDescriptor) {
+        if (!regions || regions.length === 0) regions = ['us-central1'];
         if (options && options.instance) {
             cloudFuncs[`${target.constructor.name}_${propertyKey}`] = functions.database.instance(options.instance).ref(path).onWrite(target[propertyKey]);
         } else {
@@ -52,7 +56,7 @@ export function onDatabaseWrite(path: string, options?: DatabaseOptions) {
 
 export function onFirestoreCreate(path: string, ...regions: Region[]) {
     return function (target: any, propertyKey: string, descriptor: PropertyDescriptor) {
-        if (!regions || regions.length == 0) regions = ['us-central1'];
+        if (!regions || regions.length === 0) regions = ['us-central1'];
         cloudFuncs[`${target.constructor.name}_${propertyKey}`] =
             functions.region(...regions).firestore.document(path).onCreate(target[propertyKey]);
     }
@@ -60,7 +64,7 @@ export function onFirestoreCreate(path: string, ...regions: Region[]) {
 
 export function onFirestoreDelete(path: string, ...regions: Region[]) {
     return function (target: any, propertyKey: string, descriptor: PropertyDescriptor) {
-        if (!regions || regions.length == 0) regions = ['us-central1'];
+        if (!regions || regions.length === 0) regions = ['us-central1'];
         cloudFuncs[`${target.constructor.name}_${propertyKey}`] =
             functions.region(...regions).firestore.document(path).onDelete(target[propertyKey]);
     }
@@ -68,7 +72,7 @@ export function onFirestoreDelete(path: string, ...regions: Region[]) {
 
 export function onFirestoreUpdate(path: string, ...regions: Region[]) {
     return function (target: any, propertyKey: string, descriptor: PropertyDescriptor) {
-        if (!regions || regions.length == 0) regions = ['us-central1'];
+        if (!regions || regions.length === 0) regions = ['us-central1'];
         cloudFuncs[`${target.constructor.name}_${propertyKey}`] =
             functions.region(...regions).firestore.document(path).onUpdate(target[propertyKey]);
     }
@@ -76,7 +80,7 @@ export function onFirestoreUpdate(path: string, ...regions: Region[]) {
 
 export function onFirestoreWrite(path: string, ...regions: Region[]) {
     return function (target: any, propertyKey: string, descriptor: PropertyDescriptor) {
-        if (!regions || regions.length == 0) regions = ['us-central1'];
+        if (!regions || regions.length === 0) regions = ['us-central1'];
         cloudFuncs[`${target.constructor.name}_${propertyKey}`] =
             functions.region(...regions).firestore.document(path).onWrite(target[propertyKey]);
     }
@@ -84,7 +88,7 @@ export function onFirestoreWrite(path: string, ...regions: Region[]) {
 
 export function onCall(...regions: Region[]) {
     return function (target: any, propertyKey: string, descriptor: PropertyDescriptor) {
-        if (!regions || regions.length == 0) regions = ['us-central1'];
+        if (!regions || regions.length === 0) regions = ['us-central1'];
         cloudFuncs[`${target.constructor.name}_${propertyKey}`] =
             functions.region(...regions).https.onCall(target[propertyKey]);
     }
@@ -93,8 +97,8 @@ export function onCall(...regions: Region[]) {
 export function onRequest(path: string = '/', options?: RequestOptions, ...regions: Region[]) {
     return function (target: any, propertyKey: string, descriptor: PropertyDescriptor) {
         if (!path) path = '/';
-        if (!regions || regions.length == 0) regions = ['us-central1'];
-        if (path == '/' && !options) {
+        if (!regions || regions.length === 0) regions = ['us-central1'];
+        if (path === '/' && !options) {
             cloudFuncs[`${target.constructor.name}_${propertyKey}`] =
                 functions.region(...regions).https.onRequest(target[propertyKey]);
         } else {
@@ -125,7 +129,7 @@ export function onRequest(path: string = '/', options?: RequestOptions, ...regio
 
 export function onSchedule(schedule: string, options?: ScheduleOptions, ...regions: Region[]) {
     return function (target: any, propertyKey: string, descriptor: PropertyDescriptor) {
-        if (!regions || regions.length == 0) regions = ['us-central1'];
+        if (!regions || regions.length === 0) regions = ['us-central1'];
         if (options && options.timeZone) {
             cloudFuncs[`${target.constructor.name}_${propertyKey}`] =
                 functions.region(...regions).pubsub.schedule(schedule).timeZone(options.timeZone).onRun(target[propertyKey]);

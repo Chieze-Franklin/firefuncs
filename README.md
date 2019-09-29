@@ -250,6 +250,60 @@ export class FirestoreFunctions {
 }
 ```
 
+### onDatabaseCreate, onDatabaseDelete, onDatabaseUpdate, onDatabaseWrite
+```ts
+onDatabaseCreate(path: string, options: DatabaseOptions, ...regions: Region[])
+onDatabaseDelete(path: string, options: DatabaseOptions, ...regions: Region[])
+onDatabaseUpdate(path: string, options: DatabaseOptions, ...regions: Region[])
+onDatabaseWrite(path: string, options: DatabaseOptions, ...regions: Region[])
+```
+
+These decorators specify that a function should [handle events in Firebase Realtime Database](https://firebase.google.com/docs/functions/database-events).
+
+#### parameters
+- **path**  
+This is a `string` parameter that represents the path to the document that is being listened to.
+
+- **options**  
+This is an optional `DatabaseOptions` parameter for passing in extra data to the decorator.
+
+```ts
+class DatabaseOptions {
+    instance?: string; // the database instance
+}
+```
+
+- **regions**  
+This is an optional list of [regions](https://firebase.google.com/docs/functions/locations) where the function should be deployed to.
+
+#### example
+```ts
+import { onDatabaseCreate, onDatabaseDelete, onDatabaseUpdate, onDatabaseWrite } from 'firefuncs';
+
+export class FirestoreFunctions {
+    @onDatabaseCreate('/messages/{pushId}/original')
+    public async makeUppercase(snapshot, context) {
+        const original = snapshot.val();
+        console.log('Uppercasing', context.params.pushId, original);
+        const uppercase = original.toUpperCase();
+        return snapshot.ref.parent.child('uppercase').set(uppercase);
+    }
+    @onDatabaseWrite('/messages/{pushId}/original')
+    public async makeUppercase2(change, context) {
+        if (change.before.exists()) {
+            return null;
+        }
+        // Exit when the data is deleted.
+        if (!change.after.exists()) {
+            return null;
+        }
+        const original = change.after.val();
+        const uppercase = original.toUpperCase();
+        return change.after.ref.parent.child('uppercase').set(uppercase);
+    }
+}
+```
+
 ### onSchedule
 ```ts
 onSchedule(schedule: string, options?: ScheduleOptions, ...regions: Region[])
