@@ -252,10 +252,10 @@ export class FirestoreFunctions {
 
 ### onDatabaseCreate, onDatabaseDelete, onDatabaseUpdate, onDatabaseWrite
 ```ts
-onDatabaseCreate(path: string, options: DatabaseOptions, ...regions: Region[])
-onDatabaseDelete(path: string, options: DatabaseOptions, ...regions: Region[])
-onDatabaseUpdate(path: string, options: DatabaseOptions, ...regions: Region[])
-onDatabaseWrite(path: string, options: DatabaseOptions, ...regions: Region[])
+onDatabaseCreate(path: string, options?: DatabaseOptions, ...regions: Region[])
+onDatabaseDelete(path: string, options?: DatabaseOptions, ...regions: Region[])
+onDatabaseUpdate(path: string, options?: DatabaseOptions, ...regions: Region[])
+onDatabaseWrite(path: string, options?: DatabaseOptions, ...regions: Region[])
 ```
 
 These decorators specify that a function should [handle events in Firebase Realtime Database](https://firebase.google.com/docs/functions/database-events).
