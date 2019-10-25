@@ -129,3 +129,5 @@ Now you can add more functions in the **/functions** directory and never need to
 - [onSchedule](https://github.com/Chieze-Franklin/firefuncs/wiki/onSchedule)
 
 - [onCall](https://github.com/Chieze-Franklin/firefuncs/wiki/onCall)
+
+- [onAuthUserCreate, onAuthUserDelete](https://github.com/Chieze-Franklin/firefuncs/wiki/onAuthUserCreate,-onAuthUserDelete)
