@@ -1,11 +1,11 @@
 {
   "name": "firefuncs",
-  "version": "0.2.4",
+  "version": "0.2.6",
   "description": "Create Firebase Cloud Functions from functions marked with decorators",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
-    "prepublish": "tsc",
+    "prepare": "tsc",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
