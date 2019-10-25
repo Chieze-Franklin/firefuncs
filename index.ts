@@ -140,6 +140,22 @@ export function onSchedule(schedule: string, options?: ScheduleOptions, ...regio
     }
 }
 
+export function onAuthUserCreate(...regions: Region[]) {
+    return function (target: any, propertyKey: string, descriptor: PropertyDescriptor) {
+        if (!regions || regions.length === 0) regions = ['us-central1'];
+        cloudFuncs[`${target.constructor.name}_${propertyKey}`] =
+            functions.region(...regions).auth.user().onCreate(target[propertyKey]);
+    }
+}
+
+export function onAuthUserDelete(...regions: Region[]) {
+    return function (target: any, propertyKey: string, descriptor: PropertyDescriptor) {
+        if (!regions || regions.length === 0) regions = ['us-central1'];
+        cloudFuncs[`${target.constructor.name}_${propertyKey}`] =
+            functions.region(...regions).auth.user().onDelete(target[propertyKey]);
+    }
+}
+
 export function getFunctions(pattern: string) {
     let files = glob.sync(pattern);
     files.map((f: string) => require(f));
