@@ -120,14 +120,16 @@ Now you can add more functions in the **/functions** directory and never need to
 
 ## Firefuncs decorators
 
-- [onRequest](https://github.com/Chieze-Franklin/firefuncs/wiki/onRequest)
-
-- [onFirestoreCreate, onFirestoreDelete, onFirestoreUpdate, onFirestoreWrite](https://github.com/Chieze-Franklin/firefuncs/wiki/onFirestoreCreate,-onFirestoreDelete,-onFirestoreUpdate,-onFirestoreWrite)
-
-- [onDatabaseCreate, onDatabaseDelete, onDatabaseUpdate, onDatabaseWrite](https://github.com/Chieze-Franklin/firefuncs/wiki/onDatabaseCreate,-onDatabaseDelete,-onDatabaseUpdate,-onDatabaseWrite)
-
-- [onSchedule](https://github.com/Chieze-Franklin/firefuncs/wiki/onSchedule)
+- [onAuthUserCreate, onAuthUserDelete](https://github.com/Chieze-Franklin/firefuncs/wiki/onAuthUserCreate,-onAuthUserDelete)
 
 - [onCall](https://github.com/Chieze-Franklin/firefuncs/wiki/onCall)
 
-- [onAuthUserCreate, onAuthUserDelete](https://github.com/Chieze-Franklin/firefuncs/wiki/onAuthUserCreate,-onAuthUserDelete)
+- [onDatabaseCreate, onDatabaseDelete, onDatabaseUpdate, onDatabaseWrite](https://github.com/Chieze-Franklin/firefuncs/wiki/onDatabaseCreate,-onDatabaseDelete,-onDatabaseUpdate,-onDatabaseWrite)
+
+- [onFirestoreCreate, onFirestoreDelete, onFirestoreUpdate, onFirestoreWrite](https://github.com/Chieze-Franklin/firefuncs/wiki/onFirestoreCreate,-onFirestoreDelete,-onFirestoreUpdate,-onFirestoreWrite)
+
+- [onRequest](https://github.com/Chieze-Franklin/firefuncs/wiki/onRequest)
+
+- [onSchedule](https://github.com/Chieze-Franklin/firefuncs/wiki/onSchedule)
+
+- [onStorageObjectArchive, onStorageObjectDelete, onStorageObjectFinalize, onStorageObjectMetadataUpdate](https://github.com/Chieze-Franklin/firefuncs/wiki/onStorageObjectArchive,-onStorageObjectDelete,-onStorageObjectFinalize,-onStorageObjectMetadataUpdate)
