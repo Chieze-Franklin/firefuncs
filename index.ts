@@ -47,9 +47,11 @@ export function onDatabaseDelete(path: string, options?: DatabaseOptions, ...reg
     return function (target: any, propertyKey: string, descriptor: PropertyDescriptor) {
         if (!regions || regions.length === 0) regions = ['us-central1'];
         if (options && options.instance) {
-            cloudFuncs[`${target.constructor.name}_${propertyKey}`] = functions.database.instance(options.instance).ref(path).onDelete(target[propertyKey]);
+            cloudFuncs[`${target.constructor.name}_${propertyKey}`] =
+                functions.region(...regions).database.instance(options.instance).ref(path).onDelete(target[propertyKey]);
         } else {
-            cloudFuncs[`${target.constructor.name}_${propertyKey}`] = functions.database.ref(path).onDelete(target[propertyKey]);
+            cloudFuncs[`${target.constructor.name}_${propertyKey}`] =
+                functions.region(...regions).database.ref(path).onDelete(target[propertyKey]);
         }
     }
 }
@@ -58,9 +60,11 @@ export function onDatabaseUpdate(path: string, options?: DatabaseOptions, ...reg
     return function (target: any, propertyKey: string, descriptor: PropertyDescriptor) {
         if (!regions || regions.length === 0) regions = ['us-central1'];
         if (options && options.instance) {
-            cloudFuncs[`${target.constructor.name}_${propertyKey}`] = functions.database.instance(options.instance).ref(path).onUpdate(target[propertyKey]);
+            cloudFuncs[`${target.constructor.name}_${propertyKey}`] =
+                functions.region(...regions).database.instance(options.instance).ref(path).onUpdate(target[propertyKey]);
         } else {
-            cloudFuncs[`${target.constructor.name}_${propertyKey}`] = functions.database.ref(path).onUpdate(target[propertyKey]);
+            cloudFuncs[`${target.constructor.name}_${propertyKey}`] =
+                functions.region(...regions).database.ref(path).onUpdate(target[propertyKey]);
         }
     }
 }
@@ -69,9 +73,11 @@ export function onDatabaseWrite(path: string, options?: DatabaseOptions, ...regi
     return function (target: any, propertyKey: string, descriptor: PropertyDescriptor) {
         if (!regions || regions.length === 0) regions = ['us-central1'];
         if (options && options.instance) {
-            cloudFuncs[`${target.constructor.name}_${propertyKey}`] = functions.database.instance(options.instance).ref(path).onWrite(target[propertyKey]);
+            cloudFuncs[`${target.constructor.name}_${propertyKey}`] =
+                functions.region(...regions).database.instance(options.instance).ref(path).onWrite(target[propertyKey]);
         } else {
-            cloudFuncs[`${target.constructor.name}_${propertyKey}`] = functions.database.ref(path).onWrite(target[propertyKey]);
+            cloudFuncs[`${target.constructor.name}_${propertyKey}`] =
+                functions.region(...regions).database.ref(path).onWrite(target[propertyKey]);
         }
     }
 }
@@ -167,10 +173,10 @@ export function onStorageObjectArchive(options?: StorageOptions, ...regions: Reg
         if (!regions || regions.length === 0) regions = ['us-central1'];
         if (options && options.bucket) {
             cloudFuncs[`${target.constructor.name}_${propertyKey}`]
-                = functions.storage.bucket(options.bucket).object().onArchive(target[propertyKey]);
+                = functions.region(...regions).storage.bucket(options.bucket).object().onArchive(target[propertyKey]);
         } else {
             cloudFuncs[`${target.constructor.name}_${propertyKey}`]
-                = functions.storage.object().onArchive(target[propertyKey]);
+                = functions.region(...regions).storage.object().onArchive(target[propertyKey]);
         }
     }
 }
@@ -180,10 +186,10 @@ export function onStorageObjectDelete(options?: StorageOptions, ...regions: Regi
         if (!regions || regions.length === 0) regions = ['us-central1'];
         if (options && options.bucket) {
             cloudFuncs[`${target.constructor.name}_${propertyKey}`]
-                = functions.storage.bucket(options.bucket).object().onDelete(target[propertyKey]);
+                = functions.region(...regions).storage.bucket(options.bucket).object().onDelete(target[propertyKey]);
         } else {
             cloudFuncs[`${target.constructor.name}_${propertyKey}`]
-                = functions.storage.object().onDelete(target[propertyKey]);
+                = functions.region(...regions).storage.object().onDelete(target[propertyKey]);
         }
     }
 }
@@ -193,10 +199,10 @@ export function onStorageObjectFinalize(options?: StorageOptions, ...regions: Re
         if (!regions || regions.length === 0) regions = ['us-central1'];
         if (options && options.bucket) {
             cloudFuncs[`${target.constructor.name}_${propertyKey}`]
-                = functions.storage.bucket(options.bucket).object().onFinalize(target[propertyKey]);
+                = functions.region(...regions).storage.bucket(options.bucket).object().onFinalize(target[propertyKey]);
         } else {
             cloudFuncs[`${target.constructor.name}_${propertyKey}`]
-                = functions.storage.object().onFinalize(target[propertyKey]);
+                = functions.region(...regions).storage.object().onFinalize(target[propertyKey]);
         }
     }
 }
@@ -206,10 +212,10 @@ export function onStorageObjectMetadataUpdate(options?: StorageOptions, ...regio
         if (!regions || regions.length === 0) regions = ['us-central1'];
         if (options && options.bucket) {
             cloudFuncs[`${target.constructor.name}_${propertyKey}`]
-                = functions.storage.bucket(options.bucket).object().onMetadataUpdate(target[propertyKey]);
+                = functions.region(...regions).storage.bucket(options.bucket).object().onMetadataUpdate(target[propertyKey]);
         } else {
             cloudFuncs[`${target.constructor.name}_${propertyKey}`]
-                = functions.storage.object().onMetadataUpdate(target[propertyKey]);
+                = functions.region(...regions).storage.object().onMetadataUpdate(target[propertyKey]);
         }
     }
 }
