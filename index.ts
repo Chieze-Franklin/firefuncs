@@ -2,11 +2,33 @@ import cors from 'cors';
 import express from 'express';
 import * as functions from 'firebase-functions';
 import * as glob from 'glob';
-import { DatabaseOptions, RequestOptions, ScheduleOptions, Region } from './options';
+import {
+    DatabaseOptions,
+    RequestOptions,
+    ScheduleOptions,
+    StorageOptions,
+    Region
+} from './options';
 import { RequestMiddleware } from './middleware';
 
 let cloudFuncs: any = {};
 let map = new Map<string, RequestMiddleware>();
+
+export function onAuthUserCreate(...regions: Region[]) {
+    return function (target: any, propertyKey: string, descriptor: PropertyDescriptor) {
+        if (!regions || regions.length === 0) regions = ['us-central1'];
+        cloudFuncs[`${target.constructor.name}_${propertyKey}`] =
+            functions.region(...regions).auth.user().onCreate(target[propertyKey]);
+    }
+}
+
+export function onAuthUserDelete(...regions: Region[]) {
+    return function (target: any, propertyKey: string, descriptor: PropertyDescriptor) {
+        if (!regions || regions.length === 0) regions = ['us-central1'];
+        cloudFuncs[`${target.constructor.name}_${propertyKey}`] =
+            functions.region(...regions).auth.user().onDelete(target[propertyKey]);
+    }
+}
 
 export function onDatabaseCreate(path: string, options?: DatabaseOptions, ...regions: Region[]) {
     return function (target: any, propertyKey: string, descriptor: PropertyDescriptor) {
@@ -140,19 +162,55 @@ export function onSchedule(schedule: string, options?: ScheduleOptions, ...regio
     }
 }
 
-export function onAuthUserCreate(...regions: Region[]) {
+export function onStorageObjectArchive(options?: StorageOptions, ...regions: Region[]) {
     return function (target: any, propertyKey: string, descriptor: PropertyDescriptor) {
         if (!regions || regions.length === 0) regions = ['us-central1'];
-        cloudFuncs[`${target.constructor.name}_${propertyKey}`] =
-            functions.region(...regions).auth.user().onCreate(target[propertyKey]);
+        if (options && options.bucket) {
+            cloudFuncs[`${target.constructor.name}_${propertyKey}`]
+                = functions.storage.bucket(options.bucket).object().onArchive(target[propertyKey]);
+        } else {
+            cloudFuncs[`${target.constructor.name}_${propertyKey}`]
+                = functions.storage.object().onArchive(target[propertyKey]);
+        }
     }
 }
 
-export function onAuthUserDelete(...regions: Region[]) {
+export function onStorageObjectDelete(options?: StorageOptions, ...regions: Region[]) {
     return function (target: any, propertyKey: string, descriptor: PropertyDescriptor) {
         if (!regions || regions.length === 0) regions = ['us-central1'];
-        cloudFuncs[`${target.constructor.name}_${propertyKey}`] =
-            functions.region(...regions).auth.user().onDelete(target[propertyKey]);
+        if (options && options.bucket) {
+            cloudFuncs[`${target.constructor.name}_${propertyKey}`]
+                = functions.storage.bucket(options.bucket).object().onDelete(target[propertyKey]);
+        } else {
+            cloudFuncs[`${target.constructor.name}_${propertyKey}`]
+                = functions.storage.object().onDelete(target[propertyKey]);
+        }
+    }
+}
+
+export function onStorageObjectFinalize(options?: StorageOptions, ...regions: Region[]) {
+    return function (target: any, propertyKey: string, descriptor: PropertyDescriptor) {
+        if (!regions || regions.length === 0) regions = ['us-central1'];
+        if (options && options.bucket) {
+            cloudFuncs[`${target.constructor.name}_${propertyKey}`]
+                = functions.storage.bucket(options.bucket).object().onFinalize(target[propertyKey]);
+        } else {
+            cloudFuncs[`${target.constructor.name}_${propertyKey}`]
+                = functions.storage.object().onFinalize(target[propertyKey]);
+        }
+    }
+}
+
+export function onStorageObjectMetadataUpdate(options?: StorageOptions, ...regions: Region[]) {
+    return function (target: any, propertyKey: string, descriptor: PropertyDescriptor) {
+        if (!regions || regions.length === 0) regions = ['us-central1'];
+        if (options && options.bucket) {
+            cloudFuncs[`${target.constructor.name}_${propertyKey}`]
+                = functions.storage.bucket(options.bucket).object().onMetadataUpdate(target[propertyKey]);
+        } else {
+            cloudFuncs[`${target.constructor.name}_${propertyKey}`]
+                = functions.storage.object().onMetadataUpdate(target[propertyKey]);
+        }
     }
 }
 

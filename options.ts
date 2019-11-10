@@ -17,3 +17,7 @@ export class RequestOptions {
 export class ScheduleOptions {
     timeZone?: string;
 }
+
+export class StorageOptions {
+    bucket?: string;
+}
