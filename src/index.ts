@@ -31,7 +31,7 @@ const funcStorages: {[key: string]: boolean} = {};
 const funcStorageBuckets: {[key: string]: string} = {};
 
 export function func() {
-    return function (target: any, propertyKey: string, descriptor: PropertyDescriptor) {
+    return (target: any, propertyKey: string, descriptor: PropertyDescriptor) => {
         const funcName = composeFunctionName(target, propertyKey);
 
         funcActions[funcName].forEach((funcAction, index) => {
@@ -70,32 +70,32 @@ export function func() {
     }
 }
 
-export function bucket(bucket: string) {
-    return function (target: any, propertyKey: string, descriptor: PropertyDescriptor) {
-        funcStorageBuckets[composeFunctionName(target, propertyKey)] = bucket;
+export function bucket(bucketName: string) {
+    return (target: any, propertyKey: string, descriptor: PropertyDescriptor) => {
+        funcStorageBuckets[composeFunctionName(target, propertyKey)] = bucketName;
     }
 }
 
-export function database(database: string) {
-    return function (target: any, propertyKey: string, descriptor: PropertyDescriptor) {
-        funcFirestoreDatabases[composeFunctionName(target, propertyKey)] = database;
+export function database(databaseName: string) {
+    return (target: any, propertyKey: string, descriptor: PropertyDescriptor) => {
+        funcFirestoreDatabases[composeFunctionName(target, propertyKey)] = databaseName;
     }
 }
 
-export function instance(instance: string) {
-    return function (target: any, propertyKey: string, descriptor: PropertyDescriptor) {
-        funcDatabaseInstances[composeFunctionName(target, propertyKey)] = instance;
+export function instance(instanceName: string) {
+    return (target: any, propertyKey: string, descriptor: PropertyDescriptor) => {
+        funcDatabaseInstances[composeFunctionName(target, propertyKey)] = instanceName;
     }
 }
 
-export function namespace(namespace: string) {
-    return function (target: any, propertyKey: string, descriptor: PropertyDescriptor) {
-        funcFirestoreNamespaces[composeFunctionName(target, propertyKey)] = namespace;
+export function namespace(namespaceName: string) {
+    return (target: any, propertyKey: string, descriptor: PropertyDescriptor) => {
+        funcFirestoreNamespaces[composeFunctionName(target, propertyKey)] = namespaceName;
     }
 }
 
 export function region(...regions: Region[]) {
-    return function (target: any, propertyKey: string, descriptor: PropertyDescriptor) {
+    return (target: any, propertyKey: string, descriptor: PropertyDescriptor) => {
         if (!regions || regions.length === 0) {
             regions = ['us-central1'];
         }
@@ -105,7 +105,7 @@ export function region(...regions: Region[]) {
 }
 
 export function runWith(runtimeOptions: RuntimeOptions) {
-    return function (target: any, propertyKey: string, descriptor: PropertyDescriptor) {
+    return (target: any, propertyKey: string, descriptor: PropertyDescriptor) => {
         funcRunWiths[composeFunctionName(target, propertyKey)] = runtimeOptions;
     }
 }
@@ -113,7 +113,7 @@ export function runWith(runtimeOptions: RuntimeOptions) {
 // _________________________ Action Decorators _________________________
 
 export function onAuthUserCreate(...regions: Region[]) {
-    return function (target: any, propertyKey: string, descriptor: PropertyDescriptor) {
+    return (target: any, propertyKey: string, descriptor: PropertyDescriptor) => {
         const funcName = composeFunctionName(target, propertyKey);
 
         funcActions[funcName] = [
@@ -126,7 +126,7 @@ export function onAuthUserCreate(...regions: Region[]) {
 }
 
 export function onAuthUserDelete(...regions: Region[]) {
-    return function (target: any, propertyKey: string, descriptor: PropertyDescriptor) {
+    return (target: any, propertyKey: string, descriptor: PropertyDescriptor) => {
         const funcName = composeFunctionName(target, propertyKey);
 
         funcActions[funcName] = [
@@ -139,7 +139,7 @@ export function onAuthUserDelete(...regions: Region[]) {
 }
 
 export function onDatabaseCreate(path: string) {
-    return function (target: any, propertyKey: string, descriptor: PropertyDescriptor) {
+    return (target: any, propertyKey: string, descriptor: PropertyDescriptor) => {
         const funcName = composeFunctionName(target, propertyKey);
 
         funcDatabases[funcName] = true;
@@ -156,7 +156,7 @@ export function onDatabaseCreate(path: string) {
 }
 
 export function onDatabaseDelete(path: string) {
-    return function (target: any, propertyKey: string, descriptor: PropertyDescriptor) {
+    return (target: any, propertyKey: string, descriptor: PropertyDescriptor) => {
         const funcName = composeFunctionName(target, propertyKey);
 
         funcDatabases[funcName] = true;
@@ -173,7 +173,7 @@ export function onDatabaseDelete(path: string) {
 }
 
 export function onDatabaseUpdate(path: string) {
-    return function (target: any, propertyKey: string, descriptor: PropertyDescriptor) {
+    return (target: any, propertyKey: string, descriptor: PropertyDescriptor) => {
         const funcName = composeFunctionName(target, propertyKey);
 
         funcDatabases[funcName] = true;
@@ -190,7 +190,7 @@ export function onDatabaseUpdate(path: string) {
 }
 
 export function onDatabaseWrite(path: string) {
-    return function (target: any, propertyKey: string, descriptor: PropertyDescriptor) {
+    return (target: any, propertyKey: string, descriptor: PropertyDescriptor) => {
         const funcName = composeFunctionName(target, propertyKey);
 
         funcDatabases[funcName] = true;
@@ -207,7 +207,7 @@ export function onDatabaseWrite(path: string) {
 }
 
 export function onFirestoreCreate(path: string) {
-    return function (target: any, propertyKey: string, descriptor: PropertyDescriptor) {
+    return (target: any, propertyKey: string, descriptor: PropertyDescriptor) => {
         const funcName = composeFunctionName(target, propertyKey);
 
         funcFirestores[funcName] = true;
@@ -224,7 +224,7 @@ export function onFirestoreCreate(path: string) {
 }
 
 export function onFirestoreDelete(path: string) {
-    return function (target: any, propertyKey: string, descriptor: PropertyDescriptor) {
+    return (target: any, propertyKey: string, descriptor: PropertyDescriptor) => {
         const funcName = composeFunctionName(target, propertyKey);
 
         funcFirestores[funcName] = true;
@@ -241,7 +241,7 @@ export function onFirestoreDelete(path: string) {
 }
 
 export function onFirestoreUpdate(path: string) {
-    return function (target: any, propertyKey: string, descriptor: PropertyDescriptor) {
+    return (target: any, propertyKey: string, descriptor: PropertyDescriptor) => {
         const funcName = composeFunctionName(target, propertyKey);
 
         funcFirestores[funcName] = true;
@@ -258,7 +258,7 @@ export function onFirestoreUpdate(path: string) {
 }
 
 export function onFirestoreWrite(path: string, ...regions: Region[]) {
-    return function (target: any, propertyKey: string, descriptor: PropertyDescriptor) {
+    return (target: any, propertyKey: string, descriptor: PropertyDescriptor) => {
         const funcName = composeFunctionName(target, propertyKey);
 
         funcFirestores[funcName] = true;
@@ -275,7 +275,7 @@ export function onFirestoreWrite(path: string, ...regions: Region[]) {
 }
 
 export function onCall() {
-    return function (target: any, propertyKey: string, descriptor: PropertyDescriptor) {
+    return (target: any, propertyKey: string, descriptor: PropertyDescriptor) => {
         const funcName = composeFunctionName(target, propertyKey);
 
         funcActions[funcName] = [
@@ -288,7 +288,7 @@ export function onCall() {
 }
 
 export function onRequest(path: string = '/', options?: RequestOptions) {
-    return function (target: any, propertyKey: string, descriptor: PropertyDescriptor) {
+    return (target: any, propertyKey: string, descriptor: PropertyDescriptor) => {
         const funcName = composeFunctionName(target, propertyKey);
 
         funcActions[funcName] = [
@@ -305,7 +305,7 @@ export function onRequest(path: string = '/', options?: RequestOptions) {
 }
 
 // export function onSchedule(schedule: string, options?: ScheduleOptions, ...regions: Region[]) {
-//     return function (target: any, propertyKey: string, descriptor: PropertyDescriptor) {
+//     return (target: any, propertyKey: string, descriptor: PropertyDescriptor) => {
 //         if (options && options.timeZone) {
 //             cloudFuncs[`${target.constructor.name}_${propertyKey}`] =
 //                 functions.region(...regions).pubsub.schedule(schedule).timeZone(options.timeZone).onRun(target[propertyKey]);
@@ -317,7 +317,7 @@ export function onRequest(path: string = '/', options?: RequestOptions) {
 // }
 
 export function onStorageObjectArchive() {
-    return function (target: any, propertyKey: string, descriptor: PropertyDescriptor) {
+    return (target: any, propertyKey: string, descriptor: PropertyDescriptor) => {
         const funcName = composeFunctionName(target, propertyKey);
 
         funcStorages[funcName] = true;
@@ -331,7 +331,7 @@ export function onStorageObjectArchive() {
 }
 
 export function onStorageObjectDelete() {
-    return function (target: any, propertyKey: string, descriptor: PropertyDescriptor) {
+    return (target: any, propertyKey: string, descriptor: PropertyDescriptor) => {
         const funcName = composeFunctionName(target, propertyKey);
 
         funcStorages[funcName] = true;
@@ -345,7 +345,7 @@ export function onStorageObjectDelete() {
 }
 
 export function onStorageObjectFinalize() {
-    return function (target: any, propertyKey: string, descriptor: PropertyDescriptor) {
+    return (target: any, propertyKey: string, descriptor: PropertyDescriptor) => {
         const funcName = composeFunctionName(target, propertyKey);
 
         funcStorages[funcName] = true;
@@ -359,7 +359,7 @@ export function onStorageObjectFinalize() {
 }
 
 export function onStorageObjectMetadataUpdate() {
-    return function (target: any, propertyKey: string, descriptor: PropertyDescriptor) {
+    return (target: any, propertyKey: string, descriptor: PropertyDescriptor) => {
         const funcName = composeFunctionName(target, propertyKey);
 
         funcStorages[funcName] = true;
@@ -373,7 +373,7 @@ export function onStorageObjectMetadataUpdate() {
 }
 
 export function getFunctions(pattern: string) {
-    let files = glob.sync(pattern);
+    const files = glob.sync(pattern);
     files.map((f: string) => require(f));
     return cloudFuncs;
 }
