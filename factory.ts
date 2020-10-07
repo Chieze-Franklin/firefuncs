@@ -6,7 +6,6 @@ import {
     RuntimeOptions,
     RequestOptions,
     ScheduleOptions,
-    StorageOptions,
     Region
 } from './options';
 
@@ -18,6 +17,22 @@ export function createFuncWithDatabaseInstance(func: any, instance: string | und
     }
 
     return func.database;
+}
+
+export function createFuncWithFirestoreDatabase(func: any, database: string | undefined) {
+    if (database) {
+        return func.firestore.database(database);
+    }
+
+    return func.firestore;
+}
+
+export function createFuncWithFirestoreNamespace(func: any, namespace: string | undefined) {
+    if (namespace) {
+        return func.namespace(namespace);
+    }
+
+    return func;
 }
 
 export function createFuncWithRegion(func: any, regions: Region[] | undefined) {
@@ -36,8 +51,20 @@ export function createFuncWithRunWith(func: any, runtimeOptions: RuntimeOptions 
     return func;
 }
 
+export function createFuncWithStorageBucket(func: any, bucket: string | undefined) {
+    if (bucket) {
+        return func.storage.bucket(bucket);
+    }
+
+    return func.storage;
+}
+
 export function createFuncWithAction(func: any, functionAction: FunctionAction, target: any, propertyKey: string) {
     switch (functionAction.type) {
+        case 'onAuthUserCreate':
+            return func.auth.user().onCreate(target[propertyKey]);
+        case 'onAuthUserDelete':
+            return func.auth.user().onDelete(target[propertyKey]);
         case 'onCall':
             return func.https.onCall(target[propertyKey]);
         case 'onDatabaseCreate': {
@@ -59,6 +86,26 @@ export function createFuncWithAction(func: any, functionAction: FunctionAction, 
             const path = functionAction.payload?.path;
 
             return func.ref(path).onWrite(target[propertyKey]);
+        }
+        case 'onFirestoreCreate': {
+            const path = functionAction.payload?.path;
+
+            return func.document(path).onCreate(target[propertyKey]);
+        }
+        case 'onFirestoreDelete': {
+            const path = functionAction.payload?.path;
+
+            return func.document(path).onDelete(target[propertyKey]);
+        }
+        case 'onFirestoreUpdate': {
+            const path = functionAction.payload?.path;
+
+            return func.document(path).onUpdate(target[propertyKey]);
+        }
+        case 'onFirestoreWrite': {
+            const path = functionAction.payload?.path;
+
+            return func.document(path).onWrite(target[propertyKey]);
         }
         case 'onRequest': {
             const path = functionAction.payload?.path || '/';
@@ -92,6 +139,14 @@ export function createFuncWithAction(func: any, functionAction: FunctionAction, 
                 return func.https.onRequest(app);
             }
         }
+        case 'onStorageObjectArchive':
+            return func.object().onArchive(target[propertyKey]);
+        case 'onStorageObjectDelete':
+            return func.object().onDelete(target[propertyKey]);
+        case 'onStorageObjectFinalize':
+            return func.object().onFinalize(target[propertyKey]);
+        case 'onStorageObjectMetadataUpdate':
+            return func.object().onMetadataUpdate(target[propertyKey]);
         default:
             return func.https.onCall(target[propertyKey]);
     }

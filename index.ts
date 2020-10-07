@@ -2,8 +2,11 @@ import * as functions from 'firebase-functions';
 import * as glob from 'glob';
 import {
     createFuncWithDatabaseInstance,
+    createFuncWithFirestoreDatabase,
+    createFuncWithFirestoreNamespace,
     createFuncWithRegion,
     createFuncWithRunWith,
+    createFuncWithStorageBucket,
     createFuncWithAction
 } from './factory';
 import {
@@ -11,18 +14,21 @@ import {
     RuntimeOptions,
     RequestOptions,
     ScheduleOptions,
-    StorageOptions,
     Region
 } from './options';
 import { composeFunctionName } from './utils';
 
 const cloudFuncs: {[key: string]: any} = {};
 const funcActions: {[key: string]: FunctionAction[]} = {};
+const funcDatabases: {[key: string]: boolean} = {};
 const funcDatabaseInstances: {[key: string]: string} = {};
+const funcFirestores: {[key: string]: boolean} = {};
+const funcFirestoreDatabases: {[key: string]: string} = {};
+const funcFirestoreNamespaces: {[key: string]: string} = {};
 const funcRegions: {[key: string]: Region[]} = {};
 const funcRunWiths: {[key: string]: RuntimeOptions} = {};
-
-// 258
+const funcStorages: {[key: string]: boolean} = {};
+const funcStorageBuckets: {[key: string]: string} = {};
 
 export function func() {
     return function (target: any, propertyKey: string, descriptor: PropertyDescriptor) {
@@ -37,8 +43,23 @@ export function func() {
             // runWith
             cloudFunc = createFuncWithRunWith(cloudFunc, funcRunWiths[funcName]);
 
-            // database instance
-            cloudFunc = createFuncWithDatabaseInstance(cloudFunc, funcDatabaseInstances[funcName]);
+            if (funcDatabases[funcName]) {
+                // database instance
+                cloudFunc = createFuncWithDatabaseInstance(cloudFunc, funcDatabaseInstances[funcName]);
+            }
+
+            if (funcFirestores[funcName]) {
+                // firestore database
+                cloudFunc = createFuncWithFirestoreDatabase(cloudFunc, funcFirestoreDatabases[funcName]);
+
+                // firestore namespace
+                cloudFunc = createFuncWithFirestoreNamespace(cloudFunc, funcFirestoreNamespaces[funcName]);
+            }
+
+            if (funcStorages[funcName]) {
+                // storage bucket
+                cloudFunc = createFuncWithStorageBucket(cloudFunc, funcStorageBuckets[funcName]);
+            }
 
             // func actions
             cloudFunc = createFuncWithAction(cloudFunc, funcAction, target, propertyKey);
@@ -49,9 +70,27 @@ export function func() {
     }
 }
 
+export function bucket(bucket: string) {
+    return function (target: any, propertyKey: string, descriptor: PropertyDescriptor) {
+        funcStorageBuckets[composeFunctionName(target, propertyKey)] = bucket;
+    }
+}
+
+export function database(database: string) {
+    return function (target: any, propertyKey: string, descriptor: PropertyDescriptor) {
+        funcFirestoreDatabases[composeFunctionName(target, propertyKey)] = database;
+    }
+}
+
 export function instance(instance: string) {
     return function (target: any, propertyKey: string, descriptor: PropertyDescriptor) {
         funcDatabaseInstances[composeFunctionName(target, propertyKey)] = instance;
+    }
+}
+
+export function namespace(namespace: string) {
+    return function (target: any, propertyKey: string, descriptor: PropertyDescriptor) {
+        funcFirestoreNamespaces[composeFunctionName(target, propertyKey)] = namespace;
     }
 }
 
@@ -75,15 +114,27 @@ export function runWith(runtimeOptions: RuntimeOptions) {
 
 export function onAuthUserCreate(...regions: Region[]) {
     return function (target: any, propertyKey: string, descriptor: PropertyDescriptor) {
-        cloudFuncs[`${target.constructor.name}_${propertyKey}`] =
-            functions.region(...regions).auth.user().onCreate(target[propertyKey]);
+        const funcName = composeFunctionName(target, propertyKey);
+
+        funcActions[funcName] = [
+            ...(funcActions[funcName] || []),
+            {
+                type: 'onAuthUserCreate'
+            }
+        ];
     }
 }
 
 export function onAuthUserDelete(...regions: Region[]) {
     return function (target: any, propertyKey: string, descriptor: PropertyDescriptor) {
-        cloudFuncs[`${target.constructor.name}_${propertyKey}`] =
-            functions.region(...regions).auth.user().onDelete(target[propertyKey]);
+        const funcName = composeFunctionName(target, propertyKey);
+
+        funcActions[funcName] = [
+            ...(funcActions[funcName] || []),
+            {
+                type: 'onAuthUserDelete'
+            }
+        ];
     }
 }
 
@@ -91,6 +142,7 @@ export function onDatabaseCreate(path: string) {
     return function (target: any, propertyKey: string, descriptor: PropertyDescriptor) {
         const funcName = composeFunctionName(target, propertyKey);
 
+        funcDatabases[funcName] = true;
         funcActions[funcName] = [
             ...(funcActions[funcName] || []),
             {
@@ -107,6 +159,7 @@ export function onDatabaseDelete(path: string) {
     return function (target: any, propertyKey: string, descriptor: PropertyDescriptor) {
         const funcName = composeFunctionName(target, propertyKey);
 
+        funcDatabases[funcName] = true;
         funcActions[funcName] = [
             ...(funcActions[funcName] || []),
             {
@@ -123,6 +176,7 @@ export function onDatabaseUpdate(path: string) {
     return function (target: any, propertyKey: string, descriptor: PropertyDescriptor) {
         const funcName = composeFunctionName(target, propertyKey);
 
+        funcDatabases[funcName] = true;
         funcActions[funcName] = [
             ...(funcActions[funcName] || []),
             {
@@ -139,6 +193,7 @@ export function onDatabaseWrite(path: string) {
     return function (target: any, propertyKey: string, descriptor: PropertyDescriptor) {
         const funcName = composeFunctionName(target, propertyKey);
 
+        funcDatabases[funcName] = true;
         funcActions[funcName] = [
             ...(funcActions[funcName] || []),
             {
@@ -151,31 +206,71 @@ export function onDatabaseWrite(path: string) {
     }
 }
 
-export function onFirestoreCreate(path: string, ...regions: Region[]) {
+export function onFirestoreCreate(path: string) {
     return function (target: any, propertyKey: string, descriptor: PropertyDescriptor) {
-        cloudFuncs[`${target.constructor.name}_${propertyKey}`] =
-            functions.region(...regions).firestore.document(path).onCreate(target[propertyKey]);
+        const funcName = composeFunctionName(target, propertyKey);
+
+        funcFirestores[funcName] = true;
+        funcActions[funcName] = [
+            ...(funcActions[funcName] || []),
+            {
+                type: 'onFirestoreCreate',
+                payload: {
+                    path
+                }
+            }
+        ];
     }
 }
 
-export function onFirestoreDelete(path: string, ...regions: Region[]) {
+export function onFirestoreDelete(path: string) {
     return function (target: any, propertyKey: string, descriptor: PropertyDescriptor) {
-        cloudFuncs[`${target.constructor.name}_${propertyKey}`] =
-            functions.region(...regions).firestore.document(path).onDelete(target[propertyKey]);
+        const funcName = composeFunctionName(target, propertyKey);
+
+        funcFirestores[funcName] = true;
+        funcActions[funcName] = [
+            ...(funcActions[funcName] || []),
+            {
+                type: 'onFirestoreDelete',
+                payload: {
+                    path
+                }
+            }
+        ];
     }
 }
 
-export function onFirestoreUpdate(path: string, ...regions: Region[]) {
+export function onFirestoreUpdate(path: string) {
     return function (target: any, propertyKey: string, descriptor: PropertyDescriptor) {
-        cloudFuncs[`${target.constructor.name}_${propertyKey}`] =
-            functions.region(...regions).firestore.document(path).onUpdate(target[propertyKey]);
+        const funcName = composeFunctionName(target, propertyKey);
+
+        funcFirestores[funcName] = true;
+        funcActions[funcName] = [
+            ...(funcActions[funcName] || []),
+            {
+                type: 'onFirestoreUpdate',
+                payload: {
+                    path
+                }
+            }
+        ];
     }
 }
 
 export function onFirestoreWrite(path: string, ...regions: Region[]) {
     return function (target: any, propertyKey: string, descriptor: PropertyDescriptor) {
-        cloudFuncs[`${target.constructor.name}_${propertyKey}`] =
-            functions.region(...regions).firestore.document(path).onWrite(target[propertyKey]);
+        const funcName = composeFunctionName(target, propertyKey);
+
+        funcFirestores[funcName] = true;
+        funcActions[funcName] = [
+            ...(funcActions[funcName] || []),
+            {
+                type: 'onFirestoreWrite',
+                payload: {
+                    path
+                }
+            }
+        ];
     }
 }
 
@@ -209,63 +304,71 @@ export function onRequest(path: string = '/', options?: RequestOptions) {
     }
 }
 
-export function onSchedule(schedule: string, options?: ScheduleOptions, ...regions: Region[]) {
+// export function onSchedule(schedule: string, options?: ScheduleOptions, ...regions: Region[]) {
+//     return function (target: any, propertyKey: string, descriptor: PropertyDescriptor) {
+//         if (options && options.timeZone) {
+//             cloudFuncs[`${target.constructor.name}_${propertyKey}`] =
+//                 functions.region(...regions).pubsub.schedule(schedule).timeZone(options.timeZone).onRun(target[propertyKey]);
+//         } else {
+//             cloudFuncs[`${target.constructor.name}_${propertyKey}`] =
+//                 functions.region(...regions).pubsub.schedule(schedule).onRun(target[propertyKey]);
+//         }
+//     }
+// }
+
+export function onStorageObjectArchive() {
     return function (target: any, propertyKey: string, descriptor: PropertyDescriptor) {
-        if (options && options.timeZone) {
-            cloudFuncs[`${target.constructor.name}_${propertyKey}`] =
-                functions.region(...regions).pubsub.schedule(schedule).timeZone(options.timeZone).onRun(target[propertyKey]);
-        } else {
-            cloudFuncs[`${target.constructor.name}_${propertyKey}`] =
-                functions.region(...regions).pubsub.schedule(schedule).onRun(target[propertyKey]);
-        }
+        const funcName = composeFunctionName(target, propertyKey);
+
+        funcStorages[funcName] = true;
+        funcActions[funcName] = [
+            ...(funcActions[funcName] || []),
+            {
+                type: 'onStorageObjectArchive'
+            }
+        ];
     }
 }
 
-export function onStorageObjectArchive(options?: StorageOptions, ...regions: Region[]) {
+export function onStorageObjectDelete() {
     return function (target: any, propertyKey: string, descriptor: PropertyDescriptor) {
-        if (options && options.bucket) {
-            cloudFuncs[`${target.constructor.name}_${propertyKey}`]
-                = functions.region(...regions).storage.bucket(options.bucket).object().onArchive(target[propertyKey]);
-        } else {
-            cloudFuncs[`${target.constructor.name}_${propertyKey}`]
-                = functions.region(...regions).storage.object().onArchive(target[propertyKey]);
-        }
+        const funcName = composeFunctionName(target, propertyKey);
+
+        funcStorages[funcName] = true;
+        funcActions[funcName] = [
+            ...(funcActions[funcName] || []),
+            {
+                type: 'onStorageObjectDelete'
+            }
+        ];
     }
 }
 
-export function onStorageObjectDelete(options?: StorageOptions, ...regions: Region[]) {
+export function onStorageObjectFinalize() {
     return function (target: any, propertyKey: string, descriptor: PropertyDescriptor) {
-        if (options && options.bucket) {
-            cloudFuncs[`${target.constructor.name}_${propertyKey}`]
-                = functions.region(...regions).storage.bucket(options.bucket).object().onDelete(target[propertyKey]);
-        } else {
-            cloudFuncs[`${target.constructor.name}_${propertyKey}`]
-                = functions.region(...regions).storage.object().onDelete(target[propertyKey]);
-        }
+        const funcName = composeFunctionName(target, propertyKey);
+
+        funcStorages[funcName] = true;
+        funcActions[funcName] = [
+            ...(funcActions[funcName] || []),
+            {
+                type: 'onStorageObjectFinalize'
+            }
+        ];
     }
 }
 
-export function onStorageObjectFinalize(options?: StorageOptions, ...regions: Region[]) {
+export function onStorageObjectMetadataUpdate() {
     return function (target: any, propertyKey: string, descriptor: PropertyDescriptor) {
-        if (options && options.bucket) {
-            cloudFuncs[`${target.constructor.name}_${propertyKey}`]
-                = functions.region(...regions).storage.bucket(options.bucket).object().onFinalize(target[propertyKey]);
-        } else {
-            cloudFuncs[`${target.constructor.name}_${propertyKey}`]
-                = functions.region(...regions).storage.object().onFinalize(target[propertyKey]);
-        }
-    }
-}
+        const funcName = composeFunctionName(target, propertyKey);
 
-export function onStorageObjectMetadataUpdate(options?: StorageOptions, ...regions: Region[]) {
-    return function (target: any, propertyKey: string, descriptor: PropertyDescriptor) {
-        if (options && options.bucket) {
-            cloudFuncs[`${target.constructor.name}_${propertyKey}`]
-                = functions.region(...regions).storage.bucket(options.bucket).object().onMetadataUpdate(target[propertyKey]);
-        } else {
-            cloudFuncs[`${target.constructor.name}_${propertyKey}`]
-                = functions.region(...regions).storage.object().onMetadataUpdate(target[propertyKey]);
-        }
+        funcStorages[funcName] = true;
+        funcActions[funcName] = [
+            ...(funcActions[funcName] || []),
+            {
+                type: 'onStorageObjectMetadataUpdate'
+            }
+        ];
     }
 }
 

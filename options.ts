@@ -6,9 +6,12 @@ export type FailurePolicy = {
 
 export type FunctionAction = {
     type:
+        "onAuthUserCreate" | "onAuthUserDelete" |
         "onCall" |
         "onDatabaseCreate" | "onDatabaseDelete" | "onDatabaseUpdate" | "onDatabaseWrite" |
-        "onRequest";
+        "onFirestoreCreate" | "onFirestoreDelete" | "onFirestoreUpdate" | "onFirestoreWrite" |
+        "onRequest" |
+        "onStorageObjectArchive" | "onStorageObjectDelete" | "onStorageObjectFinalize" | "onStorageObjectMetadataUpdate";
     payload?: {
         [key: string]: any
     }
@@ -60,8 +63,4 @@ export interface ScheduleOptions {
     schedule: string;
     timeZone?: string;
     retryConfig?: ScheduleRetryConfig;
-}
-
-export class StorageOptions {
-    bucket?: string;
 }
