@@ -1,5 +1,7 @@
 # firefuncs
 
+[![NPM version](https://badge.fury.io/js/firefuncs.svg)](http://badge.fury.io/js/firefuncs)
+
 >> Create [Firebase cloud functions](https://firebase.google.com/docs/functions) from functions marked with [decorators](https://www.typescriptlang.org/docs/handbook/decorators.html).
 
 ```bash
