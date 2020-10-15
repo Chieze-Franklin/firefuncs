@@ -1,374 +1,160 @@
 import * as functions from 'firebase-functions';
 import * as glob from 'glob';
-import {
-    createFuncWithDatabaseInstance,
-    createFuncWithFirestoreDatabase,
-    createFuncWithFirestoreNamespace,
-    createFuncWithRegion,
-    createFuncWithRunWith,
-    createFuncWithStorageBucket,
-    createFuncWithAction
-} from './factory';
-import {
-    FunctionAction,
-    RuntimeOptions,
-    RequestOptions,
-    ScheduleOptions,
-    Region
-} from './options';
 import { composeFunctionName } from './utils';
 
+// ------------- function creators ------------
+
+import {
+    createFuncWithAction,
+    createFuncWithRegion,
+    createFuncWithRunWith
+} from './factory';
+import {
+    createFuncWithDatabaseInstance
+} from './factory/database';
+import {
+    createFuncWithFirestoreDatabase,
+    createFuncWithFirestoreNamespace,
+} from './factory/firestore';
+import {
+    createFuncWithPubsubRetryConfig,
+    createFuncWithPubsubSchedule,
+    createFuncWithPubsubTimeZone,
+    createFuncWithPubsubTopic
+} from './factory/pubsub';
+import {
+    createFuncWithStorageBucket
+} from './factory/storage';
+
+// ------------- maps/objects/dictionaries to help track decorators ------------
+
+import {
+    funcActionMap,
+    funcRegionsMap,
+    funcRunWithMap
+} from './decorators';
+import {
+    funcDatabaseMap,
+    funcDatabaseInstanceMap
+} from './decorators/database';
+import {
+    funcFirestoreMap,
+    funcFirestoreDatabaseMap,
+    funcFirestoreNamespaceMap
+} from './decorators/firestore';
+import {
+    funcPubsubMap,
+    funcPubsubRetryconfMap,
+    funcPubsubScheduleMap,
+    funcPubsubTimezoneMap,
+    funcPubsubTopicMap
+} from './decorators/pubsub';
+import {
+    funcStorageMap,
+    funcStorageBucketMap
+} from './decorators/storage';
+
+// ------------- exported decorators ------------
+
+export {
+    region,
+    runWith
+} from './decorators';
+export {
+    onAuthUserCreate,
+    onAuthUserDelete
+} from './decorators/auth';
+export {
+    instance,
+    onDatabaseCreate,
+    onDatabaseDelete,
+    onDatabaseUpdate,
+    onDatabaseWrite
+} from './decorators/database';
+export {
+    database,
+    namespace,
+    onFirestoreCreate,
+    onFirestoreDelete,
+    onFirestoreUpdate,
+    onFirestoreWrite
+} from './decorators/firestore';
+export {
+    onHttpsCall,
+    onHttpsRequest
+} from './decorators/https';
+export {
+    retryConfig,
+    schedule,
+    timeZone,
+    topic,
+    onPubsubPublish,
+    onPubsubRun
+} from './decorators/pubsub';
+export {
+    bucket,
+    onStorageObjectArchive,
+    onStorageObjectDelete,
+    onStorageObjectFinalize,
+    onStorageObjectMetadataUpdate
+} from './decorators/storage';
+
 const cloudFuncs: {[key: string]: any} = {};
-const funcActions: {[key: string]: FunctionAction[]} = {};
-const funcDatabases: {[key: string]: boolean} = {};
-const funcDatabaseInstances: {[key: string]: string} = {};
-const funcFirestores: {[key: string]: boolean} = {};
-const funcFirestoreDatabases: {[key: string]: string} = {};
-const funcFirestoreNamespaces: {[key: string]: string} = {};
-const funcRegions: {[key: string]: Region[]} = {};
-const funcRunWiths: {[key: string]: RuntimeOptions} = {};
-const funcStorages: {[key: string]: boolean} = {};
-const funcStorageBuckets: {[key: string]: string} = {};
 
 export function func() {
     return (target: any, propertyKey: string, descriptor: PropertyDescriptor) => {
         const funcName = composeFunctionName(target, propertyKey);
 
-        funcActions[funcName].forEach((funcAction, index) => {
+        funcActionMap[funcName].forEach((funcAction, index) => {
             let cloudFunc = functions;
 
             // region
-            cloudFunc = createFuncWithRegion(cloudFunc, funcRegions[funcName]);
+            cloudFunc = createFuncWithRegion(cloudFunc, funcRegionsMap[funcName]);
 
             // runWith
-            cloudFunc = createFuncWithRunWith(cloudFunc, funcRunWiths[funcName]);
+            cloudFunc = createFuncWithRunWith(cloudFunc, funcRunWithMap[funcName]);
 
-            if (funcDatabases[funcName]) {
+            if (funcDatabaseMap[funcName]) {
                 // database instance
-                cloudFunc = createFuncWithDatabaseInstance(cloudFunc, funcDatabaseInstances[funcName]);
+                cloudFunc = createFuncWithDatabaseInstance(cloudFunc, funcDatabaseInstanceMap[funcName]);
             }
 
-            if (funcFirestores[funcName]) {
+            if (funcFirestoreMap[funcName]) {
                 // firestore database
-                cloudFunc = createFuncWithFirestoreDatabase(cloudFunc, funcFirestoreDatabases[funcName]);
+                cloudFunc = createFuncWithFirestoreDatabase(cloudFunc, funcFirestoreDatabaseMap[funcName]);
 
                 // firestore namespace
-                cloudFunc = createFuncWithFirestoreNamespace(cloudFunc, funcFirestoreNamespaces[funcName]);
+                cloudFunc = createFuncWithFirestoreNamespace(cloudFunc, funcFirestoreNamespaceMap[funcName]);
             }
 
-            if (funcStorages[funcName]) {
+            if (funcPubsubMap[funcName]) {
+                // pubsub schedule
+                // pubsub topic
+                // can't use the 2 simultaneously
+                if (funcPubsubScheduleMap[funcName]) {
+                    cloudFunc = createFuncWithPubsubSchedule(cloudFunc, funcPubsubScheduleMap[funcName]);
+                } else {
+                    cloudFunc = createFuncWithPubsubTopic(cloudFunc, funcPubsubTopicMap[funcName]);
+                }
+
+                // pubsub retryConfig
+                cloudFunc = createFuncWithPubsubRetryConfig(cloudFunc, funcPubsubRetryconfMap[funcName]);
+
+                // pubsub timeZone
+                cloudFunc = createFuncWithPubsubTimeZone(cloudFunc, funcPubsubTimezoneMap[funcName]);
+            }
+
+            if (funcStorageMap[funcName]) {
                 // storage bucket
-                cloudFunc = createFuncWithStorageBucket(cloudFunc, funcStorageBuckets[funcName]);
+                cloudFunc = createFuncWithStorageBucket(cloudFunc, funcStorageBucketMap[funcName]);
             }
 
             // func actions
             cloudFunc = createFuncWithAction(cloudFunc, funcAction, target, propertyKey);
 
             // final result
-            cloudFuncs[`${funcName}${funcActions[funcName].length > 1 ? `${(index + 1)}_${funcAction.type}` : ''}`] = cloudFunc;
+            cloudFuncs[`${funcName}${funcActionMap[funcName].length > 1 ? `${(index + 1)}_${funcAction.type}` : ''}`] = cloudFunc;
         });
-    }
-}
-
-export function bucket(bucketName: string) {
-    return (target: any, propertyKey: string, descriptor: PropertyDescriptor) => {
-        funcStorageBuckets[composeFunctionName(target, propertyKey)] = bucketName;
-    }
-}
-
-export function database(databaseName: string) {
-    return (target: any, propertyKey: string, descriptor: PropertyDescriptor) => {
-        funcFirestoreDatabases[composeFunctionName(target, propertyKey)] = databaseName;
-    }
-}
-
-export function instance(instanceName: string) {
-    return (target: any, propertyKey: string, descriptor: PropertyDescriptor) => {
-        funcDatabaseInstances[composeFunctionName(target, propertyKey)] = instanceName;
-    }
-}
-
-export function namespace(namespaceName: string) {
-    return (target: any, propertyKey: string, descriptor: PropertyDescriptor) => {
-        funcFirestoreNamespaces[composeFunctionName(target, propertyKey)] = namespaceName;
-    }
-}
-
-export function region(...regions: Region[]) {
-    return (target: any, propertyKey: string, descriptor: PropertyDescriptor) => {
-        if (!regions || regions.length === 0) {
-            regions = ['us-central1'];
-        }
-
-        funcRegions[composeFunctionName(target, propertyKey)] = regions;
-    }
-}
-
-export function runWith(runtimeOptions: RuntimeOptions) {
-    return (target: any, propertyKey: string, descriptor: PropertyDescriptor) => {
-        funcRunWiths[composeFunctionName(target, propertyKey)] = runtimeOptions;
-    }
-}
-
-// _________________________ Action Decorators _________________________
-
-export function onAuthUserCreate(...regions: Region[]) {
-    return (target: any, propertyKey: string, descriptor: PropertyDescriptor) => {
-        const funcName = composeFunctionName(target, propertyKey);
-
-        funcActions[funcName] = [
-            ...(funcActions[funcName] || []),
-            {
-                type: 'onAuthUserCreate'
-            }
-        ];
-    }
-}
-
-export function onAuthUserDelete(...regions: Region[]) {
-    return (target: any, propertyKey: string, descriptor: PropertyDescriptor) => {
-        const funcName = composeFunctionName(target, propertyKey);
-
-        funcActions[funcName] = [
-            ...(funcActions[funcName] || []),
-            {
-                type: 'onAuthUserDelete'
-            }
-        ];
-    }
-}
-
-export function onDatabaseCreate(path: string) {
-    return (target: any, propertyKey: string, descriptor: PropertyDescriptor) => {
-        const funcName = composeFunctionName(target, propertyKey);
-
-        funcDatabases[funcName] = true;
-        funcActions[funcName] = [
-            ...(funcActions[funcName] || []),
-            {
-                type: 'onDatabaseCreate',
-                payload: {
-                    path
-                }
-            }
-        ];
-    }
-}
-
-export function onDatabaseDelete(path: string) {
-    return (target: any, propertyKey: string, descriptor: PropertyDescriptor) => {
-        const funcName = composeFunctionName(target, propertyKey);
-
-        funcDatabases[funcName] = true;
-        funcActions[funcName] = [
-            ...(funcActions[funcName] || []),
-            {
-                type: 'onDatabaseDelete',
-                payload: {
-                    path
-                }
-            }
-        ];
-    }
-}
-
-export function onDatabaseUpdate(path: string) {
-    return (target: any, propertyKey: string, descriptor: PropertyDescriptor) => {
-        const funcName = composeFunctionName(target, propertyKey);
-
-        funcDatabases[funcName] = true;
-        funcActions[funcName] = [
-            ...(funcActions[funcName] || []),
-            {
-                type: 'onDatabaseUpdate',
-                payload: {
-                    path
-                }
-            }
-        ];
-    }
-}
-
-export function onDatabaseWrite(path: string) {
-    return (target: any, propertyKey: string, descriptor: PropertyDescriptor) => {
-        const funcName = composeFunctionName(target, propertyKey);
-
-        funcDatabases[funcName] = true;
-        funcActions[funcName] = [
-            ...(funcActions[funcName] || []),
-            {
-                type: 'onDatabaseWrite',
-                payload: {
-                    path
-                }
-            }
-        ];
-    }
-}
-
-export function onFirestoreCreate(path: string) {
-    return (target: any, propertyKey: string, descriptor: PropertyDescriptor) => {
-        const funcName = composeFunctionName(target, propertyKey);
-
-        funcFirestores[funcName] = true;
-        funcActions[funcName] = [
-            ...(funcActions[funcName] || []),
-            {
-                type: 'onFirestoreCreate',
-                payload: {
-                    path
-                }
-            }
-        ];
-    }
-}
-
-export function onFirestoreDelete(path: string) {
-    return (target: any, propertyKey: string, descriptor: PropertyDescriptor) => {
-        const funcName = composeFunctionName(target, propertyKey);
-
-        funcFirestores[funcName] = true;
-        funcActions[funcName] = [
-            ...(funcActions[funcName] || []),
-            {
-                type: 'onFirestoreDelete',
-                payload: {
-                    path
-                }
-            }
-        ];
-    }
-}
-
-export function onFirestoreUpdate(path: string) {
-    return (target: any, propertyKey: string, descriptor: PropertyDescriptor) => {
-        const funcName = composeFunctionName(target, propertyKey);
-
-        funcFirestores[funcName] = true;
-        funcActions[funcName] = [
-            ...(funcActions[funcName] || []),
-            {
-                type: 'onFirestoreUpdate',
-                payload: {
-                    path
-                }
-            }
-        ];
-    }
-}
-
-export function onFirestoreWrite(path: string, ...regions: Region[]) {
-    return (target: any, propertyKey: string, descriptor: PropertyDescriptor) => {
-        const funcName = composeFunctionName(target, propertyKey);
-
-        funcFirestores[funcName] = true;
-        funcActions[funcName] = [
-            ...(funcActions[funcName] || []),
-            {
-                type: 'onFirestoreWrite',
-                payload: {
-                    path
-                }
-            }
-        ];
-    }
-}
-
-export function onCall() {
-    return (target: any, propertyKey: string, descriptor: PropertyDescriptor) => {
-        const funcName = composeFunctionName(target, propertyKey);
-
-        funcActions[funcName] = [
-            ...(funcActions[funcName] || []),
-            {
-                type: 'onCall'
-            }
-        ];
-    }
-}
-
-export function onRequest(path: string = '/', options?: RequestOptions) {
-    return (target: any, propertyKey: string, descriptor: PropertyDescriptor) => {
-        const funcName = composeFunctionName(target, propertyKey);
-
-        funcActions[funcName] = [
-            ...(funcActions[funcName] || []),
-            {
-                type: 'onRequest',
-                payload: {
-                    options,
-                    path: path || '/'
-                }
-            }
-        ];
-    }
-}
-
-// export function onSchedule(schedule: string, options?: ScheduleOptions, ...regions: Region[]) {
-//     return (target: any, propertyKey: string, descriptor: PropertyDescriptor) => {
-//         if (options && options.timeZone) {
-//             cloudFuncs[`${target.constructor.name}_${propertyKey}`] =
-//                 functions.region(...regions).pubsub.schedule(schedule).timeZone(options.timeZone).onRun(target[propertyKey]);
-//         } else {
-//             cloudFuncs[`${target.constructor.name}_${propertyKey}`] =
-//                 functions.region(...regions).pubsub.schedule(schedule).onRun(target[propertyKey]);
-//         }
-//     }
-// }
-
-export function onStorageObjectArchive() {
-    return (target: any, propertyKey: string, descriptor: PropertyDescriptor) => {
-        const funcName = composeFunctionName(target, propertyKey);
-
-        funcStorages[funcName] = true;
-        funcActions[funcName] = [
-            ...(funcActions[funcName] || []),
-            {
-                type: 'onStorageObjectArchive'
-            }
-        ];
-    }
-}
-
-export function onStorageObjectDelete() {
-    return (target: any, propertyKey: string, descriptor: PropertyDescriptor) => {
-        const funcName = composeFunctionName(target, propertyKey);
-
-        funcStorages[funcName] = true;
-        funcActions[funcName] = [
-            ...(funcActions[funcName] || []),
-            {
-                type: 'onStorageObjectDelete'
-            }
-        ];
-    }
-}
-
-export function onStorageObjectFinalize() {
-    return (target: any, propertyKey: string, descriptor: PropertyDescriptor) => {
-        const funcName = composeFunctionName(target, propertyKey);
-
-        funcStorages[funcName] = true;
-        funcActions[funcName] = [
-            ...(funcActions[funcName] || []),
-            {
-                type: 'onStorageObjectFinalize'
-            }
-        ];
-    }
-}
-
-export function onStorageObjectMetadataUpdate() {
-    return (target: any, propertyKey: string, descriptor: PropertyDescriptor) => {
-        const funcName = composeFunctionName(target, propertyKey);
-
-        funcStorages[funcName] = true;
-        funcActions[funcName] = [
-            ...(funcActions[funcName] || []),
-            {
-                type: 'onStorageObjectMetadataUpdate'
-            }
-        ];
     }
 }
 

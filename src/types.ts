@@ -7,10 +7,10 @@ export type FailurePolicy = {
 export type FunctionAction = {
     type:
         "onAuthUserCreate" | "onAuthUserDelete" |
-        "onCall" |
         "onDatabaseCreate" | "onDatabaseDelete" | "onDatabaseUpdate" | "onDatabaseWrite" |
         "onFirestoreCreate" | "onFirestoreDelete" | "onFirestoreUpdate" | "onFirestoreWrite" |
-        "onRequest" |
+        "onHttpsCall" | "onHttpsRequest" |
+        "onPubsubPublish" | "onPubsubRun" |
         "onStorageObjectArchive" | "onStorageObjectDelete" | "onStorageObjectFinalize" | "onStorageObjectMetadataUpdate";
     payload?: {
         [key: string]: any

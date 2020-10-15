@@ -1,39 +1,15 @@
 import cors from 'cors';
 import express from 'express';
-import { RequestMiddleware } from './middleware';
+
+import { RequestMiddleware } from '../middleware';
 import {
     FunctionAction,
     RuntimeOptions,
     RequestOptions,
-    ScheduleOptions,
     Region
-} from './options';
+} from '../types';
 
 const map = new Map<string, RequestMiddleware>();
-
-export function createFuncWithDatabaseInstance(func: any, instance: string | undefined) {
-    if (instance) {
-        return func.database.instance(instance);
-    }
-
-    return func.database;
-}
-
-export function createFuncWithFirestoreDatabase(func: any, database: string | undefined) {
-    if (database) {
-        return func.firestore.database(database);
-    }
-
-    return func.firestore;
-}
-
-export function createFuncWithFirestoreNamespace(func: any, namespace: string | undefined) {
-    if (namespace) {
-        return func.namespace(namespace);
-    }
-
-    return func;
-}
 
 export function createFuncWithRegion(func: any, regions: Region[] | undefined) {
     if (regions) {
@@ -51,22 +27,12 @@ export function createFuncWithRunWith(func: any, runtimeOptions: RuntimeOptions 
     return func;
 }
 
-export function createFuncWithStorageBucket(func: any, bucket: string | undefined) {
-    if (bucket) {
-        return func.storage.bucket(bucket);
-    }
-
-    return func.storage;
-}
-
 export function createFuncWithAction(func: any, functionAction: FunctionAction, target: any, propertyKey: string) {
     switch (functionAction.type) {
         case 'onAuthUserCreate':
             return func.auth.user().onCreate(target[propertyKey]);
         case 'onAuthUserDelete':
             return func.auth.user().onDelete(target[propertyKey]);
-        case 'onCall':
-            return func.https.onCall(target[propertyKey]);
         case 'onDatabaseCreate': {
             const path = functionAction.payload?.path;
 
@@ -107,7 +73,9 @@ export function createFuncWithAction(func: any, functionAction: FunctionAction, 
 
             return func.document(path).onWrite(target[propertyKey]);
         }
-        case 'onRequest': {
+        case 'onHttpsCall':
+            return func.https.onCall(target[propertyKey]);
+        case 'onHttpsRequest': {
             const path = functionAction.payload?.path || '/';
             const options: RequestOptions = functionAction.payload?.options;
 
@@ -139,6 +107,10 @@ export function createFuncWithAction(func: any, functionAction: FunctionAction, 
                 return func.https.onRequest(app);
             }
         }
+        case 'onPubsubPublish':
+            return func.onPublish(target[propertyKey]);
+        case 'onPubsubRun':
+            return func.onRun(target[propertyKey]);
         case 'onStorageObjectArchive':
             return func.object().onArchive(target[propertyKey]);
         case 'onStorageObjectDelete':
