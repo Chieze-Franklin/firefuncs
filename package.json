@@ -1,6 +1,6 @@
 {
   "name": "firefuncs",
-  "version": "1.0.0-alpha-3",
+  "version": "1.0.0",
   "description": "Create Firebase Cloud Functions from functions marked with decorators",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",

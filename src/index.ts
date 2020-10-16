@@ -13,10 +13,6 @@ import {
     createFuncWithDatabaseInstance
 } from './factory/database';
 import {
-    createFuncWithFirestoreDatabase,
-    createFuncWithFirestoreNamespace,
-} from './factory/firestore';
-import {
     createFuncWithPubsubRetryConfig,
     createFuncWithPubsubSchedule,
     createFuncWithPubsubTimeZone,
@@ -37,11 +33,6 @@ import {
     funcDatabaseMap,
     funcDatabaseInstanceMap
 } from './decorators/database';
-import {
-    funcFirestoreMap,
-    funcFirestoreDatabaseMap,
-    funcFirestoreNamespaceMap
-} from './decorators/firestore';
 import {
     funcPubsubMap,
     funcPubsubRetryconfMap,
@@ -72,8 +63,6 @@ export {
     onDatabaseWrite
 } from './decorators/database';
 export {
-    database,
-    namespace,
     onFirestoreCreate,
     onFirestoreDelete,
     onFirestoreUpdate,
@@ -101,7 +90,7 @@ export {
 
 const cloudFuncs: {[key: string]: any} = {};
 
-export function func() {
+export function func(name: string | undefined) {
     return (target: any, propertyKey: string, descriptor: PropertyDescriptor) => {
         const funcName = composeFunctionName(target, propertyKey);
 
@@ -117,14 +106,6 @@ export function func() {
             if (funcDatabaseMap[funcName]) {
                 // database instance
                 cloudFunc = createFuncWithDatabaseInstance(cloudFunc, funcDatabaseInstanceMap[funcName]);
-            }
-
-            if (funcFirestoreMap[funcName]) {
-                // firestore database
-                cloudFunc = createFuncWithFirestoreDatabase(cloudFunc, funcFirestoreDatabaseMap[funcName]);
-
-                // firestore namespace
-                cloudFunc = createFuncWithFirestoreNamespace(cloudFunc, funcFirestoreNamespaceMap[funcName]);
             }
 
             if (funcPubsubMap[funcName]) {
@@ -153,7 +134,9 @@ export function func() {
             cloudFunc = createFuncWithAction(cloudFunc, funcAction, target, propertyKey);
 
             // final result
-            cloudFuncs[`${funcName}${funcActionMap[funcName].length > 1 ? `${(index + 1)}_${funcAction.type}` : ''}`] = cloudFunc;
+            // TODO: sanitize 'name' to allow only legal characters
+            const baseName = name ? name : funcName;
+            cloudFuncs[`${baseName}${funcActionMap[funcName].length > 1 ? `${(index + 1)}_${funcAction.type}` : ''}`] = cloudFunc;
         });
     }
 }

@@ -58,9 +58,3 @@ export interface ScheduleRetryConfig {
     maxBackoffDuration?: string;
     maxDoublings?: number;
 }
-
-export interface ScheduleOptions {
-    schedule: string;
-    timeZone?: string;
-    retryConfig?: ScheduleRetryConfig;
-}

@@ -15,6 +15,8 @@ export const funcRegionsMap: {[key: string]: Region[]} = {};
 // map of function name to runtime options
 export const funcRunWithMap: {[key: string]: RuntimeOptions} = {};
 
+// --------------- modifier decorators ---------------
+
 export function region(...regions: Region[]) {
     return (target: any, propertyKey: string, descriptor: PropertyDescriptor) => {
         if (!regions || regions.length === 0) {
