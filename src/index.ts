@@ -90,7 +90,7 @@ export {
 
 const cloudFuncs: {[key: string]: any} = {};
 
-export function func(name: (string | undefined) = undefined) {
+export function func(name?: string) {
     return (target: any, propertyKey: string, descriptor: PropertyDescriptor) => {
         const funcName = composeFunctionName(target, propertyKey);
 
