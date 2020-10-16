@@ -192,12 +192,13 @@ If multiple primary decorators are applied to a method, the produced cloud funct
 
 #### Example 1
 ```ts
-import { func, onStorageObjectArchive, onStorageObjectFinalize } from 'firefuncs';
+import { func, onStorageObjectArchive, onStorageObjectDelete, onStorageObjectFinalize } from 'firefuncs';
 
 export class Hello {
     @func('my_cloud_function')
     @onStorageObjectArchive()
     @onStorageObjectArchive()
+    @onStorageObjectArchive()
     @onStorageObjectFinalize()
     public helloWorld(object) {
         response.send('Hello from Firebase!\n\n');
@@ -205,21 +206,23 @@ export class Hello {
 }
 ```
 
-This will produce 3 cloud functions named
+This will produce 4 cloud functions named
 
 - my_cloud_function1_onStorageObjectFinalize
-- my_cloud_function2_onStorageObjectArchive
+- my_cloud_function2_onStorageObjectDelete
 - my_cloud_function3_onStorageObjectArchive
+- my_cloud_function4_onStorageObjectArchive
 
 #### Example 2
 
 ```ts
-import { func, onStorageObjectArchive, onStorageObjectFinalize } from 'firefuncs';
+import { func, onStorageObjectArchive, onStorageObjectDelete, onStorageObjectFinalize } from 'firefuncs';
 
 export class Hello {
     @func()
     @onStorageObjectArchive()
     @onStorageObjectArchive()
+    @onStorageObjectDelete()
     @onStorageObjectFinalize()
     public helloWorld(object) {
         response.send('Hello from Firebase!\n\n');
@@ -227,8 +230,9 @@ export class Hello {
 }
 ```
 
-This will produce 3 cloud functions named
+This will produce 4 cloud functions named
 
 - Hello_helloWorld1_onStorageObjectFinalize
-- Hello_helloWorld2_onStorageObjectArchive
+- Hello_helloWorld2_onStorageObjectDelete
 - Hello_helloWorld3_onStorageObjectArchive
+- Hello_helloWorld4_onStorageObjectArchive
