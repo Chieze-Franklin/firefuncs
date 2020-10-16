@@ -27,9 +27,9 @@ export function retryConfig(config: ScheduleRetryConfig) {
     }
 }
 
-export function schedule(scheduleName: string) {
+export function schedule(scheduleString: string) {
     return (target: any, propertyKey: string, descriptor: PropertyDescriptor) => {
-        funcPubsubScheduleMap[composeFunctionName(target, propertyKey)] = scheduleName;
+        funcPubsubScheduleMap[composeFunctionName(target, propertyKey)] = scheduleString;
     }
 }
 
