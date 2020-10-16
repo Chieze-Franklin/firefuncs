@@ -207,6 +207,10 @@ export class Hello {
 
 This will produce 3 cloud functions named
 
+- my_cloud_function1_onStorageObjectFinalize
+- my_cloud_function2_onStorageObjectArchive
+- my_cloud_function3_onStorageObjectArchive
+
 #### Example 2
 
 ```ts
@@ -224,3 +228,7 @@ export class Hello {
 ```
 
 This will produce 3 cloud functions named
+
+- Hello_helloWorld1_onStorageObjectFinalize
+- Hello_helloWorld2_onStorageObjectArchive
+- Hello_helloWorld3_onStorageObjectArchive
