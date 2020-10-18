@@ -198,7 +198,7 @@ export class Hello {
     @func('my_cloud_function')
     @onStorageObjectArchive()
     @onStorageObjectArchive()
-    @onStorageObjectArchive()
+    @onStorageObjectDelete()
     @onStorageObjectFinalize()
     public helloWorld(object) {
         response.send('Hello from Firebase!\n\n');
